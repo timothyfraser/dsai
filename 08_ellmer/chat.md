@@ -25,7 +25,7 @@ Teach students how to:
 🧩 Step 1. Define minimal agent abstraction
 
 Each agent is just a function taking a message (and optional context), calling an ellmer model, and returning structured output.
-
+```r
 library(ellmer)
 
 agent = function(name, system_prompt, model = "gpt-4-turbo") {
@@ -39,16 +39,16 @@ agent = function(name, system_prompt, model = "gpt-4-turbo") {
     list(agent = name, input = input, output = response)
   }
 }
-
+```
 
 ---
 
 🧠 Step 2. Create simple agents
-
+```r
 planner = agent("planner", "You are a task planner. Break down the user's goal into small tasks.")
 researcher = agent("researcher", "You are a researcher who finds background info.")
 writer = agent("writer", "You are a writer who summarizes results clearly.")
-
+```
 
 ---
 
@@ -57,7 +57,7 @@ writer = agent("writer", "You are a writer who summarizes results clearly.")
 Represent the workflow as a list of agents and rules for data flow.
 
 Simplest pattern: sequential pipeline.
-
+```r
 workflow = list(planner, researcher, writer)
 
 run_workflow = function(workflow, input) {
@@ -69,23 +69,24 @@ run_workflow = function(workflow, input) {
   }
   invisible(output)
 }
-
+```
 Now run:
-
+```r
 run_workflow(workflow, "Write a short report about the future of solar energy.")
-
-
+```
 ---
 
 🪄 Step 4. (Optional) Directed “agent graph”
 
 To mimic a multi-agent graph (not just a chain), you can define edges explicitly:
-
+```r
 graph = tibble::tibble(
   from = c("planner", "planner", "researcher"),
   to   = c("researcher", "writer", "writer")
 )
+```
 
+```r
 agents = list(planner = planner, researcher = researcher, writer = writer)
 
 run_graph = function(graph, agents, start, input) {
@@ -106,11 +107,13 @@ run_graph = function(graph, agents, start, input) {
   }
   visited
 }
+```
 
 Then call:
 
+```r
 results = run_graph(graph, agents, "planner", "Create a one-pager on AI for disaster response.")
-
+```
 
 ---
 
@@ -118,6 +121,7 @@ results = run_graph(graph, agents, "planner", "Create a one-pager on AI for disa
 
 Teach students to use ellmer’s function calling for explicit data transfer between agents:
 
+```r
 task_parser = agent(
   "task_parser",
   system_prompt = "Return a JSON list of subtasks from the user's goal."
@@ -132,6 +136,7 @@ complete(model = "gpt-4-turbo", prompt = "Make a to-do list for building a websi
            )
          ))
 )
+```
 
 You can then parse the JSON and dynamically spawn new agents per subtask — that’s your intro to multi-agent orchestration.
 
