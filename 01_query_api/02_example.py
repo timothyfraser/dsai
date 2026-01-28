@@ -43,8 +43,6 @@ print(response.status_code)
 # Extract the response as JSON and print
 print(response.json())
 
-# Clear environment
-globals.clear()
 
 # Clear environment (optional in short scripts, but shown for parity
 # with the R example that clears its workspace)
