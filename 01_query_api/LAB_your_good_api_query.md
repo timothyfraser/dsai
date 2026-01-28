@@ -10,6 +10,8 @@
 
 Create an API query that returns substantial data (more than 1 row) useful for building a reporter application.
 
+---
+
 ## ✅ Your Task
 
 ### 🧱 Stage 1: Design Query
