@@ -42,7 +42,32 @@ TOOLS = [
             },
             "required": ["dataset_name"],
         },
-    }
+    },
+    {
+        "name": "correlation_two_columns",
+        "description": (
+            "Compute the Pearson correlation between two numeric columns in a dataset "
+            "(mtcars or iris)."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "dataset_name": {
+                    "type": "string",
+                    "description": "Dataset to use. Options: 'mtcars' or 'iris'.",
+                },
+                "x": {
+                    "type": "string",
+                    "description": "Name of the first numeric column (e.g. 'mpg', 'Petal.Length').",
+                },
+                "y": {
+                    "type": "string",
+                    "description": "Name of the second numeric column (e.g. 'wt', 'Sepal.Width').",
+                },
+            },
+            "required": ["dataset_name", "x", "y"],
+        },
+    },
 ]
 
 # ── Tool logic (same datasets as R: mtcars, iris via Rdatasets CSV) ──
@@ -65,6 +90,37 @@ def run_tool(name: str, args: dict) -> str:
         summary.index.name = "variable"
         summary.columns = ["mean", "sd", "min", "max"]
         return summary.reset_index().to_json(orient="records", indent=2)
+
+    if name == "correlation_two_columns":
+        nm = args.get("dataset_name")
+        col_x = args.get("x")
+        col_y = args.get("y")
+        if nm not in DATASETS:
+            raise ValueError(f"Unknown dataset: '{nm}' — choose 'mtcars' or 'iris'")
+        if not col_x or not col_y:
+            raise ValueError("Both 'x' and 'y' column names are required.")
+
+        df = DATASETS[nm]
+        for c in (col_x, col_y):
+            if c not in df.columns:
+                raise ValueError(f"Unknown column: '{c}' — not in dataset '{nm}'.")
+
+        pair = df[[col_x, col_y]].apply(pd.to_numeric, errors="coerce")
+        if pair[col_x].isna().all() or pair[col_y].isna().all():
+            raise ValueError(f"Columns '{col_x}' and/or '{col_y}' are not numeric.")
+        clean = pair.dropna()
+        if len(clean) < 2:
+            raise ValueError("Not enough non-missing rows to compute correlation.")
+
+        r = clean[col_x].corr(clean[col_y])
+        out = {
+            "dataset_name": nm,
+            "x": col_x,
+            "y": col_y,
+            "pearson_correlation": None if pd.isna(r) else round(float(r), 6),
+            "n": int(len(clean)),
+        }
+        return json.dumps(out, indent=2)
 
     raise ValueError(f"Unknown tool: {name}")
 

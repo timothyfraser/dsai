@@ -1,0 +1,31 @@
+name: shiny_app - Deploy FDA Shiny Python App to Posit Connect
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '02_productivity/shiny_app/**'
+      - '.github/workflows/shiny_app.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Publish shiny_app to Posit Connect
+        uses: rstudio/actions/connect-publish@main
+        with:
+          url: ${{ secrets.CONNECT_SERVER }}
+          api-key: ${{ secrets.CONNECT_API_KEY }}
+          access-type: acl
+          dir: 02_productivity/shiny_app
+          force: false
+

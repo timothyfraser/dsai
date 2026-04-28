@@ -1,0 +1,49 @@
+---
+description: READ document formatting (headers, icons, links, tone) from READ_find_apis style
+alwaysApply: false
+---
+# READ Document Formatting
+
+Apply when creating or editing READ_*.md (reading) files. Match the style of `01_query_api/READ_find_apis.md`.
+
+## Headers
+
+- **Top**: `# 📌 READ` then `## [Topic Name]` (e.g. `## Finding APIs`).
+- **Estimated time** (optional): `🕒 *Estimated Time: X minutes*` on its own line after the H2.
+- Use `---` to separate the intro from the main content and before the footer.
+- **Main sections**: `## [Section Title]` (e.g. `## Free, Public APIs`).
+- **Subsections**: `### [emoji] [Subsection Name]` (e.g. `### 🏛️ Government (General Topics)`, `### 🚌 Transportation`).
+- Use `####` only for small sub-groups (e.g. `#### 🎮 Silly APIs for Practice`).
+
+## Icons
+
+- Use a single emoji in subsection headings to show category (e.g. 🏛️ Government, 🚌 Transportation, 🌱 Environment, 🏥 Health, ⚡ Energy, 📰 Media & Press, 🔧 General, 🎮 for practice/silly).
+- Keep icon choice consistent by topic; don’t over-mix.
+
+## Links and file references
+
+- **External / API links**: `[**Full Resource Name**](url): Short description. **Requires API Key.**` — bold link text, colon, then description. Use bold for requirements (e.g. **Requires API Key.**, **Register for API key.**) and *italics* for nuance (e.g. *Primarily for historical data.*).
+- **Repo or internal links**: Use relative paths. Code/script files: ``[`filename.ext`](path/to/file)``. Other docs: `[READ: Human-Readable Title](READ_filename.md)`.
+
+## Code blocks
+
+- Use fenced code blocks with a language when showing commands or snippets (e.g. ` ```bash `, ` ```markdown `).
+- Prefer inline `code` for single file names, commands, or parameter names.
+
+## Tone
+
+- Direct and concise; no filler. One or two intro sentences, then the list or content.
+- State facts; avoid “obviously”, “clearly”, “it is critical”.
+- For index-style READs: short description after each link; use bold/italic only for requirements or caveats.
+
+## Footer
+
+- Footer image (relative path): `![](../../docs/images/icons.png)` (adjust `../` depth to repo root).
+- Back link: `← 🏠 [Back to Top](#READ)` (anchor matches the top heading, e.g. `#READ` or the H2 id).
+
+## Example (list item style)
+
+```markdown
+- [**openFDA Drug Shortages API**](https://open.fda.gov/apis/drug/drugshortages/): Drug Shortages can occur for many reasons...
+- [**PurpleAir API**](https://community.purpleair.com/...): World's largest crowd-sourced air pollution... **Requires API key.**
+```

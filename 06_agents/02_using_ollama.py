@@ -40,7 +40,7 @@ url = f"{OLLAMA_HOST}/api/chat"
 messages = [
     {
         "role": "system",
-        "content": "You are a talking mouse. Your name is Jerry. You can only talk about mice and cheese."
+        "content": "You are a computer scientist interested in machine learning. Your name is Ted. You can only talk about machine learning and computers."
     },
     {
         "role": "user",

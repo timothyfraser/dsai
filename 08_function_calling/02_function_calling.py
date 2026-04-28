@@ -51,6 +51,25 @@ def add_two_numbers(x, y):
     """
     return x + y
 
+# Define another function to be used as a tool
+def subtract_numbers(x, y):
+    """
+    Subtract the second number from the first.
+
+    Parameters:
+    -----------
+    x : float
+        Minuend (number to subtract from)
+    y : float
+        Subtrahend (number to subtract)
+
+    Returns:
+    --------
+    float
+        Difference x - y
+    """
+    return x - y
+
 # 2. DEFINE TOOL METADATA ###################################
 
 # Define the tool metadata as a dictionary
@@ -77,18 +96,41 @@ tool_add_two_numbers = {
     }
 }
 
+# Define the tool metadata for subtract_numbers
+tool_subtract_numbers = {
+    "type": "function",
+    "function": {
+        "name": "subtract_numbers",
+        "description": "Subtract the second number from the first (x minus y)",
+        "parameters": {
+            "type": "object",
+            "required": ["x", "y"],
+            "properties": {
+                "x": {
+                    "type": "number",
+                    "description": "minuend (number to subtract from)"
+                },
+                "y": {
+                    "type": "number",
+                    "description": "subtrahend (number to subtract)"
+                }
+            }
+        }
+    }
+}
+
 # 3. CREATE CHAT REQUEST WITH TOOLS ###################################
 
-# Create a simple chat history with a user question that will require the tool
+# Create a simple chat history with a user question that will require subtract_numbers
 messages = [
-    {"role": "user", "content": "What is 3 + 2?"}
+    {"role": "user", "content": "What is 10 minus 3?"}
 ]
 
 # Build the request body with tools
 body = {
     "model": MODEL,
     "messages": messages,
-    "tools": [tool_add_two_numbers],
+    "tools": [tool_add_two_numbers, tool_subtract_numbers],
     "stream": False
 }
 

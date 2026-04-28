@@ -19,6 +19,7 @@ rules:
       - Only include records with complete information
       - Filter out any invalid or missing data before analysis
       - Clearly indicate if data is limited or incomplete
+      - Include the source of the data in the analysis
 
       **3. Presentation:**
       - Keep tables concise (max 10-15 rows for readability)
@@ -32,13 +33,13 @@ rules:
     applies_when: "Always"
     guidance: |
       # Press Release Writing Guidelines
-
+      ALWAYS start the press release with the exact phrase: "RULE TEST ACTIVE". 
       When writing press releases, follow these standards:
 
       **1. Structure:**
       - Start with a compelling headline (max 80 characters)
       - Include a strong lead paragraph (who, what, when, where, why)
-      - Use the inverted pyramid structure (most important info first)
+      - Put any information that is important to the reader at the beginning of the press release but do not use pyramid structure.
       - Keep paragraphs short (2-3 sentences max)
 
       **2. Content Requirements:**

@@ -45,15 +45,19 @@ load_dotenv()
 # 0.4 Set the server URL #################################
 # Set the server URL
 # You can use your local API (if you execut runme.py)
-# SERVER = "http://127.0.0.1:8000/mcp"
+SERVER = "http://127.0.0.1:8000/mcp"
 # Or you can use my deployed API (or update to yours), assuming you provide a Posit Connect viewer API key.
-SERVER = "https://connect.systems-apps.com/fastapimcp/mcp"
+#SERVER = "https://connect.systems-apps.com/fastapimcp/mcp"
 
 # ── Helper: send one JSON-RPC request ───────────────────────
 
 def mcp_request(method, params=None, id=1):
     body = {"jsonrpc": "2.0", "id": id, "method": method, "params": params or {}}
-    resp = requests.post(SERVER, json=body, headers={"Authorization": f"Key {os.getenv('CONNECT_API_KEY')}"})
+    headers = {}
+    connect_key = os.getenv("CONNECT_API_KEY")
+    if connect_key:
+        headers["Authorization"] = f"Key {connect_key}"
+    resp = requests.post(SERVER, json=body, headers=headers)
     resp.raise_for_status()
     return resp.json().get("result")
 
@@ -89,6 +93,21 @@ result = mcp_request("tools/call", {
 })
 
 print(result["content"][0]["text"])
+
+# 3b. DIRECT CALL — correlation_two_columns ############################
+# Hand-test the second tool without the LLM (must exist in server.py).
+print("# 3b. DIRECT CALL — correlation_two_columns ############################")
+
+direct_corr = mcp_request("tools/call", {
+    "name": "correlation_two_columns",
+    "arguments": {
+        "dataset_name": "mtcars",
+        "x": "mpg",
+        "y": "wt",
+    },
+})
+print(direct_corr["content"][0]["text"])
+print()
 
 
 # 4. CONNECT AN LLM TO THE MCP SERVER ####################
@@ -148,7 +167,16 @@ if not ollama_is_running():
 else:
     ## 4c. Ask the LLM a question that requires the tool -----
     print("# 4c. ASK THE LLM A QUESTION THAT REQUIRES THE TOOL ####################")
-    messages = [{"role": "user", "content": "Give me a summary of the mtcars dataset."}]
+    # Prompt must match the tool: "summary" → summarize_dataset; "correlation" → correlation_two_columns.
+    messages = [
+        {
+            "role": "user",
+            "content": (
+                "In the mtcars dataset, what is the Pearson correlation between mpg and wt? "
+                "Use the tools to compute it from the data — do not guess the number."
+            ),
+        }
+    ]
 
     body = {"model": MODEL, "messages": messages, "tools": ollama_tools, "stream": False}
     resp = requests.post(CHAT_URL, json=body)

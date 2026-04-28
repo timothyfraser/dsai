@@ -34,16 +34,16 @@ response = requests.get(
     "https://reqres.in/api/users/2",
     headers={"x-api-key": TEST_API_KEY},
 )
-
+response
 ## 2. Inspect Response ###########################
 
 # View response status code (200 = success)
-print(response.status_code)
+#print(response.status_code)
 
 # Extract the response as JSON and print
-print(response.json())
+#print(response.json())
 
 
 # Clear environment (optional in short scripts, but shown for parity
 # with the R example that clears its workspace)
-globals().clear()
+#globals().clear()

@@ -69,6 +69,35 @@ def get_table(df=None):
         df = pd.DataFrame([df])
     return df.to_markdown(index=False)
 
+# Define a function to compute the arithmetic mean of a list of numbers
+def calculate_average(numbers):
+    """
+    Compute the arithmetic mean of a list of numbers.
+
+    Parameters:
+    -----------
+    numbers : list of numbers, or None
+        Values to average. Tool arguments may arrive as JSON strings; we coerce as needed.
+
+    Returns:
+    --------
+    float
+        The mean of the values, or 0.0 if the list is empty.
+    """
+    if numbers is None:
+        return 0.0
+    if isinstance(numbers, str):
+        try:
+            numbers = json.loads(numbers)
+        except Exception:
+            pass
+    if not isinstance(numbers, (list, tuple)):
+        numbers = [numbers]
+    if len(numbers) == 0:
+        return 0.0
+    nums = [float(n) for n in numbers]
+    return sum(nums) / len(nums)
+
 # 2. DEFINE TOOL METADATA ###################################
 
 # Define the tool metadata for add_two_numbers
@@ -107,6 +136,26 @@ tool_get_table = {
                 "df": {
                     "type": "object",
                     "description": "The data.frame to convert to a markdown table using pandas to_markdown()"
+                }
+            }
+        }
+    }
+}
+
+# Define the tool metadata for calculate_average
+tool_calculate_average = {
+    "type": "function",
+    "function": {
+        "name": "calculate_average",
+        "description": "Compute the arithmetic mean of a list of numbers",
+        "parameters": {
+            "type": "object",
+            "required": ["numbers"],
+            "properties": {
+                "numbers": {
+                    "type": "array",
+                    "items": {"type": "number"},
+                    "description": "List of numeric values to average"
                 }
             }
         }
@@ -170,5 +219,32 @@ print("Manual Table Creation:")
 manual_table = df.to_markdown(index=False)
 print(manual_table)
 print()
+
+# 6. EXAMPLE 4: TOOL CALL #3 (calculate_average) ###################################
+
+# Try calling tool #3 (calculate_average) via the agent wrapper
+messages = [
+    {
+        "role": "user",
+        "content": (
+            "Use the calculate_average tool to find the mean of the numbers 4, 8, and 12. "
+            "Return only the tool call."
+        ),
+    }
+]
+
+resp3 = agent(
+    messages=messages,
+    model=MODEL,
+    output="tools",
+    tools=[tool_calculate_average],
+)
+print("Tool Call #3 Result:")
+print(resp3)
+print()
+
+if isinstance(resp3, list) and len(resp3) > 0:
+    print(f"Tool output: {resp3[0].get('output', 'No output')}")
+    print()
 
 # Note: We can use the agent() function to rapidly build and test out agents with or without tools.
