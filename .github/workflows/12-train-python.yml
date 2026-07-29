@@ -1,8 +1,13 @@
 name: Model Training Job (Python)
 
 on:
-  schedule:
-    - cron: '0 7 * * 1'   # weekly on Mondays at 7am UTC
+  # PAUSED 2026-07-29: paused alongside the ingest jobs. With ingest frozen this
+  # would retrain weekly on a static database and commit the result to main.
+  # The workflow file stays here so course links and ACTIVITY_train_cron.md
+  # still resolve, and workflow_dispatch below still allows a manual demo run.
+  # To resume, uncomment the two lines below.
+  # schedule:
+  #   - cron: '0 7 * * 1'   # weekly on Mondays at 7am UTC
   workflow_dispatch:        # allow manual trigger
 
 concurrency:
