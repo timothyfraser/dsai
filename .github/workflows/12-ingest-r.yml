@@ -1,8 +1,13 @@
 name: Traffic Data Ingestion Job (R)
 
 on:
-  schedule:
-    - cron: '*/15 * * * *' # every 15 minutes
+  # PAUSED 2026-07-29: the scheduled trigger is commented out to stop unattended
+  # runs and auto-commits to main. This job had fired 1,115 times since April.
+  # The workflow file stays here so course links and ACTIVITY_ingest_cron.md
+  # still resolve, and workflow_dispatch below still allows a manual demo run.
+  # To resume, uncomment the two lines below.
+  # schedule:
+  #   - cron: '*/15 * * * *' # every 15 minutes
   workflow_dispatch:
 
 concurrency:
