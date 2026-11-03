@@ -1,4 +1,4 @@
-# 04_agents.R
+# 03_agents_with_function_calling.R
 
 # This script demonstrates this course's approach to building agents.
 
