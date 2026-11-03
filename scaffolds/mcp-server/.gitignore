@@ -1,0 +1,5 @@
+.env
+rsconnect/
+rsconnect-python/
+__pycache__/
+.Rhistory

@@ -1,0 +1,41 @@
+# CONTRACT.yaml — the four starter tasks for Push 4
+# Check a task OUT: status: in_progress + owner + started_at.
+# Check it IN: status: done + a one-line result, in the same commit as the work.
+# "Done" means the definition_of_done is met verbatim: the named check.sh line says PASS.
+#
+# mcp_plumber/ and mcp_fastapi/ arrive as exact copies of the course's MCP server
+# files. Adding your tool to TOOLS + run_tool() in YOUR copy is the team's edit
+# (T1); nothing else in those two folders needs to change.
+
+tasks:
+  - id: T1
+    title: "Own tool"
+    status: todo
+    owner: ""
+    owns: ["mcp_plumber/plumber.R", "mcp_fastapi/server.py", "check-args.json", "SPEC.md"]
+    definition_of_done: "Our tool is added beside summarize_dataset in TOOLS and in run_tool() in our copy of mcp_plumber/plumber.R (or mcp_fastapi/server.py), written in the same style; check-args.json holds an example call for it; and `bash check.sh` prints W1 PASS, W2 PASS and W4 PASS."
+    result: ""
+
+  - id: T2
+    title: "CLI door"
+    status: todo
+    owner: ""
+    owns: ["mcp_plumber/cli.R", "mcp_fastapi/cli.py"]
+    definition_of_done: "`list` prints the same tool names as tools/list, `call <tool> --args '<json>'` prints the MCP text block byte for byte for our tool and for summarize_dataset, and `bash check.sh` prints W3 PASS and W4 PASS."
+    result: ""
+
+  - id: T3
+    title: "Deploy"
+    status: todo
+    owner: ""
+    owns: ["mcp_plumber/deployme.R", "mcp_fastapi/deployme.py", ".env.example"]
+    definition_of_done: "The MCP door is deployed to Posit Connect with the course's deployme script, MCP_URL and CONNECT_API_KEY are set in .env (never committed), and `bash check.sh --remote` prints W5 PASS and W8 PASS."
+    result: ""
+
+  - id: T4
+    title: "Skill"
+    status: todo
+    owner: ""
+    owns: ["SKILL.md", "docs/log-entry.md"]
+    definition_of_done: "SKILL.md is copied from SKILL.template.md, has name and description (at most 1,024 characters) in its frontmatter, names both tools in its 'use when' lines, and `bash check.sh` prints W6 PASS; docs/log-entry.md answers its three questions with a Recording link, and `bash check.sh` prints W7 PASS."
+    result: ""
