@@ -3,7 +3,7 @@
 # dependencies.sh
 
 # Installs all R and Python dependencies for this repository
-# Run this script from the project root: bash setup/dependencies.sh
+# Run this script from the project root: source 00_quickstart/dependencies.sh
 
 # --- SYSTEM DEPENDENCIES ---
 # Python and R must be installed manually on Windows.
