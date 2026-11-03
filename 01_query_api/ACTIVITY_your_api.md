@@ -12,7 +12,7 @@ Choose an API and find its official documentation.
 
 ### 🧱 Stage 1: Choose Your API
 
-- [ ] Read [`READ_find_apis.md`](READ_find_apis.md) to choose your API, **OR** Use your company's API (confirm you have **immediate access this week**)
+- [ ] Read [`READ_find_apis.md`](READ_find_apis.md) to choose your API, **OR** Use your company's API (confirm you have **immediate access now**)
 - [ ] Verify you can access the API (credentials, permissions, or public access)
 
 ### 🧱 Stage 2: Find Documentation

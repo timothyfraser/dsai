@@ -16,7 +16,7 @@ Install Git and Git Bash on your computer. Git Bash provides a Unix-like command
 - [ ] Download Git for your operating system (Windows, macOS, or Linux)
 - [ ] Run the installer and follow the installation wizard
 - [ ] Git Bash is included with the standard Git for Windows installer
-- [ ] After installation, you can open "Git Bash" from your Start menu (Windows) or Applications folder (macOS)
+- [ ] After installation, you can open "Git Bash" from your Start menu (Windows). On macOS and Linux, use the built-in Terminal app instead (Git for macOS does not include Git Bash).
 - **New to Git Bash?** Check out: [READ: CHEATSHEET - Git Bash](https://timothyfraser.github.io/dsai/00_quickstart/CHEATSHEET_git_bash.html)
 - **New to Git?** Check out Danny Adam's great Git Version Control Cheatsheet here: [READ: CHEATSHEET - Git](https://drive.google.com/file/d/1D19baZ83N-hwfENKjj-us0H1u3XXMAz2/view?usp=sharing)
 

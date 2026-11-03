@@ -16,7 +16,7 @@ Just one repository per person is fine, but you are welcome to make more reposit
 
 - [ ] List your GitHub ID. 
    - If you didn't make a GitHub ID at the beginning of this class, please return to Activity: Setup account with PositCloud and follow the steps to create a GitHub Account and link it to Posit Cloud.
-- [ ] Create a GitHub Repository, following the steps in our readings this week. Give it a simple name, preferably all lowercase with no spaces.
+- [ ] Create a GitHub Repository, following the steps in our readings. Give it a simple name, preferably all lowercase with no spaces.
 - [ ] Find the URL of your GitHub Repository.
 - [ ] Add one group member to your GitHub Repository. 
 - [ ] On GitHub, go to Settings/Collaborators and click to add a new member to the repository. 

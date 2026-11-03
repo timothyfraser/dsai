@@ -19,7 +19,7 @@ Run the example scripts to practice making API calls before working with your ow
 ### 🧱 Stage 2: Run Python or R Example
 
 **Python:**
-- [ ] Install: `pip install requests`
+- [ ] Install: `pip install requests python-dotenv`
 - [ ] Run: `python 02_example.py`
 
 **R:**
