@@ -1,4 +1,4 @@
-# 03_function_calling.R
+# 02_function_calling.R
 
 # This script demonstrates how to use the ollamar package in R to interact with an LLM that supports function calling.
 

@@ -1,4 +1,4 @@
-# 05_multiple_agents.R
+# 04_multiple_agents_with_function_calling.R
 
 # Load packages
 library(dplyr)
@@ -9,7 +9,7 @@ library(ollamar)
 library(purrr)
 library(lubridate)
 
-source("08_agents/functions.R")
+source("08_function_calling/functions.R")
 
 # In this script, we will build a graph of agents and their interactions,
 # to query data, perform analysis, and interpret it.
