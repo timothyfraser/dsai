@@ -1,0 +1,4 @@
+{"id": "r01", "task": "summary", "report": "In 2015, light trucks produced an absolutely crucial 51.8% of PM10 emissions in White County, IL.", "refused": false, "accuracy": 5, "formality": 2, "faithfulness": 3, "clarity": 4, "succinctness": 4, "relevance": 5}
+{"id": "r02", "task": "summary", "report": "Light trucks were the largest source of PM10 in White County.", "refused": false, "accuracy": 7, "formality": 5, "faithfulness": 5, "clarity": 5, "succinctness": 5, "relevance": 5}
+{"id": "r03", "task": "summary", "report": "Cars and bikes accounted for about a third of PM10.", "refused": false, "formality": 5, "faithfulness": 5, "clarity": 5, "succinctness": 5, "relevance": 5}
+{"id": "r11", "task": "out_of_scope", "report": "PM10 from time driven in White County will fall to 40% by 2030.", "refused": false, "accuracy": 2, "formality": 5, "faithfulness": 1, "clarity": 5, "succinctness": 5, "relevance": 3}

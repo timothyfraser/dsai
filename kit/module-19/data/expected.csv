@@ -1,0 +1,9 @@
+row_id,address_std,status,lat,lon
+1,"123 N CAYUGA ST, ITHACA, NY",resolved,42.44110,-76.49890
+2,"45 W STATE ST, ITHACA, NY",resolved,42.43920,-76.50160
+3,"200 E BUFFALO ST APT 3, ITHACA, NY",resolved,42.44180,-76.49420
+4,"17 AURORA ST, ITHACA, NY",resolved,42.44010,-76.49510
+5,,unresolved,,
+6,"310 COLLEGE AVE, ITHACA, NY",resolved,42.44230,-76.48530
+7,"999 FAKE RD, ITHACA, NY",unresolved,,
+8,"1 SENECA WAY, ITHACA, NY",resolved,42.43980,-76.49700

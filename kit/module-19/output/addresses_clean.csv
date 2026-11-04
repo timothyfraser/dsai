@@ -1,0 +1,9 @@
+row_id,address_raw,address_std,house_number,street,unit,city,state,confidence,status,lat,lon,geocode_source,reason
+1,"123 n cayuga st, ithaca ny 14850","123 N CAYUGA ST, ITHACA, NY",123,N CAYUGA ST,,ITHACA,NY,3,resolved,42.44110,-76.49890,gazetteer,Expanded n to N and st to ST; dropped the zip because the key does not use it.
+2,45 W. State Street Ithaca,"45 W STATE ST, ITHACA, NY",45,W STATE ST,,ITHACA,NY,3,resolved,42.43920,-76.50160,gazetteer,W. becomes W and Street becomes ST; state NY because Ithaca is the only city named.
+3,"200 E Buffalo St Apt 3, Ithaca, New York","200 E BUFFALO ST APT 3, ITHACA, NY",200,E BUFFALO ST,APT 3,ITHACA,NY,3,resolved,42.44180,-76.49420,gazetteer,Moved Apt 3 to the unit field; New York becomes NY.
+4,17 aurora st ithaca,"17 AURORA ST, ITHACA, NY",17,AURORA ST,,ITHACA,NY,2,resolved,42.44010,-76.49510,gazetteer,No state given; Ithaca NY assumed from the rest of the file.
+5,the green house near the commons,,,,,,,1,unresolved,,,,"Unresolved (confidence 1). A description, not an address: no house number and no street."
+6,"310 college ave., ithaca, ny","310 COLLEGE AVE, ITHACA, NY",310,COLLEGE AVE,,ITHACA,NY,3,resolved,42.44230,-76.48530,gazetteer,Removed the period after ave and wrote it as AVE.
+7,"999 Fake Rd, Ithaca NY","999 FAKE RD, ITHACA, NY",999,FAKE RD,,ITHACA,NY,3,unresolved,,,,Unresolved: no gazetteer match. Rd becomes RD; the text is a well-formed address.
+8,1 Seneca Way Ithaca NY,"1 SENECA WAY, ITHACA, NY",1,SENECA WAY,,ITHACA,NY,3,resolved,42.43980,-76.49700,gazetteer,Upper case only; WAY is already a standard street type.

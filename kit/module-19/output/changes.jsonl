@@ -1,0 +1,37 @@
+{"row_id": "1", "field": "house_number", "old": "123 n cayuga st, ithaca ny 14850", "new": "123", "reason": "Expanded n to N and st to ST; dropped the zip because the key does not use it.", "by": "model"}
+{"row_id": "1", "field": "street", "old": "123 n cayuga st, ithaca ny 14850", "new": "N CAYUGA ST", "reason": "Expanded n to N and st to ST; dropped the zip because the key does not use it.", "by": "model"}
+{"row_id": "1", "field": "city", "old": "123 n cayuga st, ithaca ny 14850", "new": "ITHACA", "reason": "Expanded n to N and st to ST; dropped the zip because the key does not use it.", "by": "model"}
+{"row_id": "1", "field": "state", "old": "123 n cayuga st, ithaca ny 14850", "new": "NY", "reason": "Expanded n to N and st to ST; dropped the zip because the key does not use it.", "by": "model"}
+{"row_id": "1", "field": "lat,lon", "old": "", "new": "42.44110,-76.49890", "reason": "Matched the gazetteer on house number, street, city and state.", "by": "geocoder"}
+{"row_id": "2", "field": "house_number", "old": "45 W. State Street Ithaca", "new": "45", "reason": "W. becomes W and Street becomes ST; state NY because Ithaca is the only city named.", "by": "model"}
+{"row_id": "2", "field": "street", "old": "45 W. State Street Ithaca", "new": "W STATE ST", "reason": "W. becomes W and Street becomes ST; state NY because Ithaca is the only city named.", "by": "model"}
+{"row_id": "2", "field": "city", "old": "45 W. State Street Ithaca", "new": "ITHACA", "reason": "W. becomes W and Street becomes ST; state NY because Ithaca is the only city named.", "by": "model"}
+{"row_id": "2", "field": "state", "old": "45 W. State Street Ithaca", "new": "NY", "reason": "W. becomes W and Street becomes ST; state NY because Ithaca is the only city named.", "by": "model"}
+{"row_id": "2", "field": "lat,lon", "old": "", "new": "42.43920,-76.50160", "reason": "Matched the gazetteer on house number, street, city and state.", "by": "geocoder"}
+{"row_id": "3", "field": "house_number", "old": "200 E Buffalo St Apt 3, Ithaca, New York", "new": "200", "reason": "Moved Apt 3 to the unit field; New York becomes NY.", "by": "model"}
+{"row_id": "3", "field": "street", "old": "200 E Buffalo St Apt 3, Ithaca, New York", "new": "E BUFFALO ST", "reason": "Moved Apt 3 to the unit field; New York becomes NY.", "by": "model"}
+{"row_id": "3", "field": "unit", "old": "200 E Buffalo St Apt 3, Ithaca, New York", "new": "APT 3", "reason": "Moved Apt 3 to the unit field; New York becomes NY.", "by": "model"}
+{"row_id": "3", "field": "city", "old": "200 E Buffalo St Apt 3, Ithaca, New York", "new": "ITHACA", "reason": "Moved Apt 3 to the unit field; New York becomes NY.", "by": "model"}
+{"row_id": "3", "field": "state", "old": "200 E Buffalo St Apt 3, Ithaca, New York", "new": "NY", "reason": "Moved Apt 3 to the unit field; New York becomes NY.", "by": "model"}
+{"row_id": "3", "field": "lat,lon", "old": "", "new": "42.44180,-76.49420", "reason": "Matched the gazetteer on house number, street, city and state.", "by": "geocoder"}
+{"row_id": "4", "field": "lat", "old": "", "new": "42.44", "reason": "Dropped: coordinates and zip codes come from the geocoder, not the model.", "by": "guard"}
+{"row_id": "4", "field": "lon", "old": "", "new": "-76.495", "reason": "Dropped: coordinates and zip codes come from the geocoder, not the model.", "by": "guard"}
+{"row_id": "4", "field": "house_number", "old": "17 aurora st ithaca", "new": "17", "reason": "No state given; Ithaca NY assumed from the rest of the file.", "by": "model"}
+{"row_id": "4", "field": "street", "old": "17 aurora st ithaca", "new": "AURORA ST", "reason": "No state given; Ithaca NY assumed from the rest of the file.", "by": "model"}
+{"row_id": "4", "field": "city", "old": "17 aurora st ithaca", "new": "ITHACA", "reason": "No state given; Ithaca NY assumed from the rest of the file.", "by": "model"}
+{"row_id": "4", "field": "state", "old": "17 aurora st ithaca", "new": "NY", "reason": "No state given; Ithaca NY assumed from the rest of the file.", "by": "model"}
+{"row_id": "4", "field": "lat,lon", "old": "", "new": "42.44010,-76.49510", "reason": "Matched the gazetteer on house number, street, city and state.", "by": "geocoder"}
+{"row_id": "6", "field": "house_number", "old": "310 college ave., ithaca, ny", "new": "310", "reason": "Removed the period after ave and wrote it as AVE.", "by": "model"}
+{"row_id": "6", "field": "street", "old": "310 college ave., ithaca, ny", "new": "COLLEGE AVE", "reason": "Removed the period after ave and wrote it as AVE.", "by": "model"}
+{"row_id": "6", "field": "city", "old": "310 college ave., ithaca, ny", "new": "ITHACA", "reason": "Removed the period after ave and wrote it as AVE.", "by": "model"}
+{"row_id": "6", "field": "state", "old": "310 college ave., ithaca, ny", "new": "NY", "reason": "Removed the period after ave and wrote it as AVE.", "by": "model"}
+{"row_id": "6", "field": "lat,lon", "old": "", "new": "42.44230,-76.48530", "reason": "Matched the gazetteer on house number, street, city and state.", "by": "geocoder"}
+{"row_id": "7", "field": "house_number", "old": "999 Fake Rd, Ithaca NY", "new": "999", "reason": "Rd becomes RD; the text is a well-formed address.", "by": "model"}
+{"row_id": "7", "field": "street", "old": "999 Fake Rd, Ithaca NY", "new": "FAKE RD", "reason": "Rd becomes RD; the text is a well-formed address.", "by": "model"}
+{"row_id": "7", "field": "city", "old": "999 Fake Rd, Ithaca NY", "new": "ITHACA", "reason": "Rd becomes RD; the text is a well-formed address.", "by": "model"}
+{"row_id": "7", "field": "state", "old": "999 Fake Rd, Ithaca NY", "new": "NY", "reason": "Rd becomes RD; the text is a well-formed address.", "by": "model"}
+{"row_id": "8", "field": "house_number", "old": "1 Seneca Way Ithaca NY", "new": "1", "reason": "Upper case only; WAY is already a standard street type.", "by": "model"}
+{"row_id": "8", "field": "street", "old": "1 Seneca Way Ithaca NY", "new": "SENECA WAY", "reason": "Upper case only; WAY is already a standard street type.", "by": "model"}
+{"row_id": "8", "field": "city", "old": "1 Seneca Way Ithaca NY", "new": "ITHACA", "reason": "Upper case only; WAY is already a standard street type.", "by": "model"}
+{"row_id": "8", "field": "state", "old": "1 Seneca Way Ithaca NY", "new": "NY", "reason": "Upper case only; WAY is already a standard street type.", "by": "model"}
+{"row_id": "8", "field": "lat,lon", "old": "", "new": "42.43980,-76.49700", "reason": "Matched the gazetteer on house number, street, city and state.", "by": "geocoder"}

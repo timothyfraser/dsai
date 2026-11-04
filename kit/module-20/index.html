@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field assistant</title>
+<style>
+  :root { --ink: #1d1b33; --paper: #f7f8f5; --line: #c9cfd6; --accent: #413f80; --ok: #2f7d62; --warn: #9a5b00; }
+  @media (prefers-color-scheme: dark) { :root { --ink: #e9ebf0; --paper: #15141f; --line: #3a3950; --accent: #a9a6ff; --ok: #60ceac; --warn: #f0b45a; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px; font: 16px/1.5 system-ui, sans-serif; color: var(--ink); background: var(--paper); max-width: 640px; margin-inline: auto; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  form { display: flex; gap: 8px; margin: 16px 0; }
+  input { flex: 1; min-width: 0; padding: 10px; font: inherit; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: inherit; }
+  button { padding: 10px 14px; font: inherit; border: 0; border-radius: 6px; background: var(--accent); color: var(--paper); }
+  button:disabled { opacity: .5; }
+  #out { min-height: 3em; padding: 12px; border: 1px solid var(--line); border-radius: 6px; }
+  #out[data-kind="answer"] { border-color: var(--ok); }
+  #out[data-kind="refused"], #out[data-kind="timeout"], #out[data-kind="broken"] { border-color: var(--warn); }
+  dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: .9rem; }
+  dt { opacity: .7; }
+</style>
+</head>
+<body>
+  <h1>Field assistant</h1>
+  <p>Answers from the stream sampling notes only, on this device. After the first load it works with no signal.</p>
+  <p id="status" role="status">Starting...</p>
+  <form id="form">
+    <label for="q" hidden>Question</label>
+    <input id="q" placeholder="How do I take a water sample?" autocomplete="off">
+    <button id="ask" disabled>Ask</button>
+  </form>
+  <div id="out" aria-live="polite"></div>
+  <dl>
+    <dt>Engine</dt><dd id="device">...</dd>
+    <dt>Time</dt><dd id="ms">-</dd>
+    <dt>Speed</dt><dd id="tps">-</dd>
+    <dt>Memory</dt><dd id="mem">-</dd>
+  </dl>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

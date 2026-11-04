@@ -1,0 +1,4 @@
+Top item: Brooklyn Bridge
+Count: 412
+Note: hand-written fixture reply 5.
+api_key = sk-XXXXXXXXXXXXXXXXXXXXXXXX

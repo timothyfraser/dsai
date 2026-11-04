@@ -1,0 +1,11 @@
+---
+description: README style for this project
+globs: **/README.md
+alwaysApply: false
+---
+
+# README Formatting
+
+- Keep it under 500 words.
+- Start with a table of contents.
+- Include one Mermaid diagram.

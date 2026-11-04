@@ -1,0 +1,4 @@
+Test: Welch two-sample t-test
+Prompts compared: prompt_A vs prompt_B (10 runs each)
+Statistic: t = 2.31
+p-value = 0.034
