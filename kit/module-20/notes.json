@@ -1,0 +1,11 @@
+{
+  "title": "Stream sampling field notes",
+  "notes": [
+    {"id": "n1", "title": "Before you leave", "text": "Charge the meter and the phone. Pack two spare sample bottles, gloves, the field form and a pencil. Tell someone which site you are visiting and when you expect to be back."},
+    {"id": "n2", "title": "Taking a water sample", "text": "Stand downstream of the bottle and face upstream. Rinse the bottle three times with stream water, then fill it below the surface with the cap off underwater. Cap it underwater so no air is trapped."},
+    {"id": "n3", "title": "Reading the meter", "text": "Rinse the probe, hold it in moving water for sixty seconds, and record temperature, pH and conductivity on the form. If the pH reading drifts by more than 0.2 in a minute, recalibrate before you record."},
+    {"id": "n4", "title": "Labelling", "text": "Label every bottle with the site code, the sample number and the time. Use the site code from the map, such as FC-03, never a nickname."},
+    {"id": "n5", "title": "Storing samples", "text": "Keep samples in the cooler with ice packs, out of the sun. Deliver them to the lab within six hours of collection."},
+    {"id": "n6", "title": "When to stop", "text": "Do not sample if the water is above your knees, moving fast, or after lightning. Record the site as skipped with the reason and leave."}
+  ]
+}

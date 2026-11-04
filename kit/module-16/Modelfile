@@ -1,0 +1,14 @@
+# Modelfile
+# A 32k-context copy of ministral-3:8b, so the context is set on the server.
+# Course kit, module 16
+#
+# OpenCode talks to Ollama through its OpenAI-style endpoint, and that endpoint
+# does not pass a context length. Bake it into the model instead:
+#   ollama pull ministral-3:8b
+#   ollama create ministral-3:8b-32k -f Modelfile
+# Then check it took:  ollama ps   (look at CONTEXT and PROCESSOR)
+
+FROM ministral-3:8b
+
+# 32,768 tokens: enough for the contract, one file and one test, on a 16 GB laptop.
+PARAMETER num_ctx 32768

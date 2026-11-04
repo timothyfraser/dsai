@@ -1,0 +1,7 @@
+id,requirement,kind,acceptance,check
+R1,Every output is a record the next program can read,verification,every row has the listed fields with the listed types and Likert scores from 1 to 5,V1
+R2,Reports state the numbers in the source data correctly,verification,every golden-set report contains its expected figure,V2
+R3,Reports read like a government report,verification,no row uses the hyperbole words from the manual quality control script,V3
+R4,The system declines questions the data cannot answer,verification,every out-of-scope request is refused,V4
+R5,The AI judge rates accuracy the way a person does,validation,the judge is within 1 point of the human rating on at least 80% of a sample of 10 or more,V5
+R6,Reports are short enough to read in a briefing,validation,every report is 60 words or fewer,V6

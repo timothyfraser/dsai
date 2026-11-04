@@ -1,0 +1,3 @@
+Top item: Manhattan Bridge
+Count: 405
+Note: hand-written fixture reply 9.

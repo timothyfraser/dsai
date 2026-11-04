@@ -1,0 +1,61 @@
+<!doctype html>
+<!--
+  index.html
+  A browser front door for your team's system: ask the API, and fall back to a model on this device.
+  Course kit, module 10
+
+  Serve the kit folder (not this folder), so ../module-20/edge.js can load:
+    cd ..   (you are now in kit/)
+    npx http-server -p 8010 .
+    open http://localhost:8010/module-10/
+  Address options: ?api=<url of your /ask endpoint>  ?timeout=<ms>  ?stub=1 (fake on-device model)
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team system</title>
+<style>
+  /* 1. COLOURS: one set of tokens, light and dark ############ */
+  :root { --ink: #1d1b33; --paper: #f7f8f5; --line: #c9cfd6; --accent: #413f80; --ok: #2f7d62; --warn: #9a5b00; }
+  @media (prefers-color-scheme: dark) { :root { --ink: #e9ebf0; --paper: #15141f; --line: #3a3950; --accent: #a9a6ff; --ok: #60ceac; --warn: #f0b45a; } }
+  * { box-sizing: border-box; }
+  body { margin: 0 auto; padding: 16px; max-width: 640px; font: 16px/1.5 system-ui, sans-serif; color: var(--ink); background: var(--paper); }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  form { display: flex; gap: 8px; margin: 16px 0; }
+  input { flex: 1; min-width: 0; padding: 10px; font: inherit; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: inherit; }
+  button { padding: 10px 14px; font: inherit; border: 0; border-radius: 6px; background: var(--accent); color: var(--paper); }
+  button.quiet { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+  button:disabled { opacity: .5; }
+  #out { min-height: 3em; padding: 12px; border: 1px solid var(--line); border-radius: 6px; }
+  #out[data-kind="server"] { border-color: var(--ok); }
+  #out[data-kind="device"], #out[data-kind="error"] { border-color: var(--warn); }
+  #path { font-weight: 600; }
+  dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: .9rem; }
+  dt { opacity: .7; }
+  ol { font-size: .9rem; padding-left: 1.2em; }
+</style>
+</head>
+<body>
+  <!-- 2. THE PAGE: a question box, one answer, and what answered it ############ -->
+  <h1>Ask the team system</h1>
+  <p>This page asks the team's server first. If the server or the network is down, a small model on this device answers instead, and the answer says so.</p>
+  <p id="status" role="status">Starting...</p>
+  <form id="form">
+    <label for="q" hidden>Question</label>
+    <input id="q" placeholder="Type a question for the system" autocomplete="off">
+    <button id="ask" disabled>Ask</button>
+  </form>
+  <div id="out" aria-live="polite"></div>
+  <!-- 3. WHAT TO MEASURE: which path answered, and how long it took ############ -->
+  <dl>
+    <dt>Answered by</dt><dd id="path">-</dd>
+    <dt>Time to answer</dt><dd id="ms">-</dd>
+    <dt>Server</dt><dd id="api">-</dd>
+  </dl>
+  <p><button id="prep" class="quiet" type="button">Download the offline model (a few hundred MB, once)</button></p>
+  <h2>Recent answers</h2>
+  <ol id="log"></ol>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

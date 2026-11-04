@@ -1,0 +1,4 @@
+risk,why_the_checks_miss_it,mitigation,owner
+The golden set covers only six figures,a report can get an uncovered figure wrong and still pass V2,add a golden row each time a reader finds an error,team
+The human sample is one rater,one person's habits become the standard the judge is measured against,add a second rater and report how often the two agree,team
+The judge and the reporter can share a blind spot,if both models misread the same table both scores look fine,keep a person reading a random sample of reports,team

@@ -124,7 +124,7 @@ POI_CATEGORIES = c(
   "public_government", "other"
 )
 
-# User-visible data dictionary + routing rubric (mirrors role of DATA_QUALITY_BLURB in fixer_csv.R).
+# User-visible data dictionary + routing guide (mirrors role of DATA_QUALITY_BLURB in fixer_csv.R).
 ROUTING_BLURB = paste0(
   "## Your job (contextual routing)\n",
   "For **each parcel_id** in the chunk, decide **which spatial tools** to call. ",

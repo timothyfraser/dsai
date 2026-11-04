@@ -52,7 +52,7 @@ Your deliverable should be a complete validation system that demonstrates:
 
 - [ ] **🔗 [20 pts] Git Repository Links**: Working, valid links to relevant content in your git repository
   - Link to your validation system script/code
-  - Link to the validation criteria/rubric definition (if separate file)
+  - Link to the validation criteria definition (if separate file)
   - Link to example validation outputs or results
   - Link to the reports you validated (from Homework 1 or 2)
   - Links must be functional and point to the correct files
@@ -60,7 +60,7 @@ Your deliverable should be a complete validation system that demonstrates:
 - [ ] **📸 [25 pts] Screenshots/Outputs**: Screenshots and/or samples of outputs
   - Screenshot showing your validation system in action
   - Screenshot or sample of validation results for one evaluated report
-  - Screenshot showing your validation criteria/rubric (if visual)
+  - Screenshot showing your validation criteria (if visual)
   - Screenshot of your statistical analysis results (t-test, ANOVA, or regression output)
   - Screenshot showing comparison of scores across different prompts (e.g., boxplot, summary statistics)
   - At least 4-5 screenshots total

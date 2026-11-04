@@ -1,0 +1,10 @@
+{
+  "1": {"house_number": "123", "street": "N CAYUGA ST", "unit": "", "city": "ITHACA", "state": "NY", "confidence": 3, "reason": "Expanded n to N and st to ST; dropped the zip because the key does not use it."},
+  "2": {"house_number": "45", "street": "W STATE ST", "unit": "", "city": "ITHACA", "state": "NY", "confidence": 3, "reason": "W. becomes W and Street becomes ST; state NY because Ithaca is the only city named."},
+  "3": {"house_number": "200", "street": "E BUFFALO ST", "unit": "APT 3", "city": "ITHACA", "state": "NY", "confidence": 3, "reason": "Moved Apt 3 to the unit field; New York becomes NY."},
+  "4": {"house_number": "17", "street": "AURORA ST", "unit": "", "city": "ITHACA", "state": "NY", "confidence": 2, "reason": "No state given; Ithaca NY assumed from the rest of the file.", "lat": 42.4400, "lon": -76.4950},
+  "5": {"house_number": "", "street": "", "unit": "", "city": "ITHACA", "state": "NY", "confidence": 1, "reason": "A description, not an address: no house number and no street."},
+  "6": {"house_number": "310", "street": "COLLEGE AVE", "unit": "", "city": "ITHACA", "state": "NY", "confidence": 3, "reason": "Removed the period after ave and wrote it as AVE."},
+  "7": {"house_number": "999", "street": "FAKE RD", "unit": "", "city": "ITHACA", "state": "NY", "confidence": 3, "reason": "Rd becomes RD; the text is a well-formed address."},
+  "8": {"house_number": "1", "street": "SENECA WAY", "unit": "", "city": "ITHACA", "state": "NY", "confidence": 3, "reason": "Upper case only; WAY is already a standard street type."}
+}

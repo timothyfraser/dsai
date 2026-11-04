@@ -1,0 +1,60 @@
+# checks.yaml
+# A sample V&V plan: the machine checks for one AI system, one entry per check.
+# Course kit, module 11
+#
+# The sample system is a reporter that writes short paragraphs about the course's
+# White County emissions table, with an AI judge that scores each paragraph.
+# Every row in data/ is a hand-written sample, so the checks run without a model.
+# Replace the system block and the checks with your own team's.
+
+system:
+  name: Emissions reporter with an AI judge
+  # The command that runs your system and writes the outputs file.
+  # VV_STUB=1 skips it and checks the outputs file already on disk.
+  run: python3 my_system.py
+  outputs: data/outputs.jsonl          # one JSON record per line
+  bad_outputs: data/outputs_bad.jsonl  # outputs you broke on purpose: a check must catch them
+
+requirements: requirements.csv   # id, requirement, kind, acceptance, check
+risks: risks.csv                 # risk, why_the_checks_miss_it, mitigation, owner
+
+checks:
+  - id: V1
+    requirement: R1
+    type: schema
+    fields: {id: str, task: str, report: str, refused: bool, accuracy: int}
+    ranges: {accuracy: [1, 5]}
+
+  - id: V2
+    requirement: R2
+    type: golden
+    file: data/golden.csv     # id, must_contain
+    field: report
+    min_rate: 1.0
+
+  - id: V3
+    requirement: R3
+    type: forbid_pattern
+    field: report
+    pattern: "crucial|critical|extremely|absolutely"
+
+  - id: V4
+    requirement: R4
+    type: refusal
+    when: {task: out_of_scope}
+
+  - id: V5
+    requirement: R5
+    type: agreement
+    human: data/human_ratings.csv   # id, rater, accuracy
+    judge: data/judge_ratings.csv   # id, accuracy
+    field: accuracy
+    tolerance: 1
+    min_rate: 0.8
+    min_n: 10
+
+  - id: V6
+    requirement: R6
+    type: max_words
+    field: report
+    limit: 60
