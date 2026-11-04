@@ -13,10 +13,10 @@ Build and deploy a new **AI-powered system** in response to one of three prompts
 **Challenge**: Can you build something functional and demo-ready in 24 hours? Can you make AI do something interesting that solves a real problem?
 
 **Timeline**: 
-- **Event**: March 6-7, 2026
-- **Start**: Friday, March 6 at 3:30 PM
-- **End**: Saturday, March 7 at 3:30 PM
-- **Demo Session**: Saturday, March 7, 2:30-3:30 PM
+- **Event**: 24 hours over two days (Canvas has the dates)
+- **Start**: Day 1, at the kickoff meeting
+- **End**: Day 2, 24 hours after the kickoff
+- **Demo Session**: the last hour of Day 2
 
 **Team Size**: Teams of 3-5 students (on-campus only)
 
@@ -26,10 +26,10 @@ Build and deploy a new **AI-powered system** in response to one of three prompts
 
 ### Task 1: Choose Your Prompt
 
-- [ ] Attend kickoff meeting (Friday 3:30 PM)
+- [ ] Attend kickoff meeting (the start of Day 1)
 - [ ] Review the 3 available prompts
 - [ ] Select one prompt that your team will solve
-- [ ] Confirm your team's prompt choice by 4:00 PM Friday
+- [ ] Confirm your team's prompt choice within 30 minutes of the kickoff
 
 ### Task 2: Design Your System
 
@@ -47,16 +47,16 @@ Build and deploy a new **AI-powered system** in response to one of three prompts
 
 ### Task 4: Demo and Submit
 
-- [ ] Push all code to a **public GitHub repository** by 2:00 PM Saturday
+- [ ] Push all code to a **public GitHub repository** half an hour before the demo session
 - [ ] Prepare documentation (README, codebook, usage instructions)
-- [ ] Demo your tool during the demo session (2:30-3:30 PM Saturday)
+- [ ] Demo your tool during the demo session (the last hour of Day 2)
 
 ---
 
 ## 💡 Tips and Resources
 
 - **Optional trainings**: Attend optional training sessions on querying AI, building APIs, using Cursor IDE, Supabase, and deploying to Posit Connect
-- **Mentor hours**: Take advantage of mentor check-ins on Friday evening and Saturday morning
+- **Mentor hours**: Take advantage of mentor check-ins on the evening of Day 1 and the morning of Day 2
 - **Use Cursor**: AI-assisted coding with Cursor is encouraged
 - **Scope wisely**: A small system that works is better than a large one that doesn't
 - **Team coordination**: Divide responsibilities and stagger breaks to keep momentum
@@ -95,7 +95,7 @@ Your project will receive a score of **0 to 100** based on:
   - Link to your **deployed application** (if applicable)
   - Test demonstration examples
 
-**Due**: Saturday, March 7, 2026 at 2:00 PM (before demo session)
+**Due**: half an hour before the demo session (Canvas has the date and time)
 
 ---
 

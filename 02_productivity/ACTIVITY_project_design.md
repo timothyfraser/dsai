@@ -46,7 +46,7 @@ need2 --- goal3
 | Schedule optimizer | To-do list + deadlines → suggested order or calendar blocks | INTERPRET, FORMAT |
 | Meeting summarizer | Transcript or notes → bullet summary + action items | SUMMARIZE, FORMAT |
 | Stats explainer | Dataset or model output → short interpretation (“what this means”) | INTERPRET, SUMMARIZE |
-| Report checker | Draft report + rubric → feedback on structure and missing sections | INTERPRET, FIX |
+| Report checker | Draft report + scoring criteria → feedback on structure and missing sections | INTERPRET, FIX |
 
 
 ---

@@ -13,8 +13,8 @@ Design, implement, and deploy a multi-part AI-powered system that demonstrates y
 **Challenge**: Can you handle complexity? Can you use Cursor to learn on the fly? Can you make an AI do something interesting from a database?
 
 **Timeline**: 
-- Prompt released: **March 2, 2026**
-- Due date: **March 9, 2026 at 9:00 AM**
+- Prompt released: **see Canvas**
+- Due date: **one week after the prompt is released (Canvas has the date and time)**
 
 **Team Size**: Work individually or in teams of 3-5 students.
 
@@ -101,7 +101,7 @@ Your project will receive a score of **0 to 100** based on:
   - Link to your **deployed application** (DigitalOcean or Posit Connect)
   - Test demonstration examples
 
-**Due**: March 9, 2026 at 9:00 AM
+**Due**: one week after the prompt is released (Canvas has the date and time)
 
 ---
 
