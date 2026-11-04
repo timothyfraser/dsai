@@ -16,14 +16,14 @@ Every file starts with a comment that names its module. Read that comment and th
 
 | Folder | Module |
 |---|---|
-| `module-02/` | Module 2: The loop and the contract |
+| `module-02/` | Module 2: Productivity with AI |
 | `module-03/` | Module 3: AI as an API, and evals |
-| `module-04/` | Module 4: Ship an API and a React app |
-| `module-06/` | Module 6: Where the data lives |
-| `module-07/` | Module 7: Retrieval and its alternatives |
+| `module-04/` | Module 4: Deployment |
+| `module-06/` | Module 6: Data management |
+| `module-07/` | Module 7: RAG: retrieval-augmented generation, and alternatives |
 | `module-09/` | Module 9: Pipelines and cron |
 | `module-10/` | Module 10: Edge and browser |
-| `module-11/` | Module 11: V&V for AI systems |
+| `module-11/` | Module 11: Evaluation |
 | `module-12/` | Module 12: Interfaces |
 | `module-13/` | Module 13: Decision support |
 | `module-16/` | Module 16: Local agents: a small model, a strict contract, a real job |
