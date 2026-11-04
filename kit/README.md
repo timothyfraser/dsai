@@ -26,9 +26,10 @@ Every file starts with a comment that names its module. Read that comment and th
 | `module-11/` | Module 11: V&V for AI systems |
 | `module-12/` | Module 12: Interfaces |
 | `module-13/` | Module 13: Decision support |
+| `module-16/` | Module 16: Local agents: a small model, a strict contract, a real job |
 | `module-17/` | Module 17: Vision models |
 | `module-18/` | Module 18: Audio models: listen, transcribe, speak |
 | `module-19/` | Module 19: Geo LLMs: addresses, parcels, places |
 | `module-20/` | Module 20: Models on your phone |
 
-Modules 1, 5, 8, 14 and 15 have no kit folder: their steps use the instructor's own files only. Module 16 is added once its review is complete.
+Modules 1, 5, 8, 14 and 15 have no kit folder: their steps use the instructor's own files only.

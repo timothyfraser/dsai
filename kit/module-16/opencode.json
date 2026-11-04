@@ -1,0 +1,47 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (local)",
+      "options": {
+        "baseURL": "http://localhost:11434/v1"
+      },
+      "models": {
+        "ministral-3:8b-32k": { "name": "Ministral 3 8B, 32k context" },
+        "qwen3:8b": { "name": "Qwen3 8B" },
+        "qwen3:4b": { "name": "Qwen3 4B" }
+      }
+    }
+  },
+  "agent": {
+    "lean": {
+      "description": "One task, one file, three commands. Reads AGENTS.md.",
+      "mode": "primary",
+      "model": "ollama/ministral-3:8b-32k",
+      "tools": {
+        "read": true,
+        "edit": true,
+        "bash": true,
+        "write": false,
+        "patch": false,
+        "glob": false,
+        "grep": false,
+        "list": false,
+        "webfetch": false,
+        "task": false,
+        "todowrite": false,
+        "todoread": false
+      },
+      "permission": {
+        "edit": "allow",
+        "bash": {
+          "*": "deny",
+          "python3 -m unittest tests.test_convert": "allow",
+          "cat *": "allow",
+          "git diff": "allow"
+        }
+      }
+    }
+  }
+}
