@@ -96,14 +96,14 @@ def query(image_file_path, user_prompt, model_name):
 
     # Stub mode: no model is called. These fixed replies let you test the checks.
     if stub == "1":
-        return ('{"n_people": 9, "n_sitting": 6, "n_standing": 3, "exit_sign_visible": "unknown", '
-                '"walkway_blocked": "no", "confidence": "medium", '
+        return ('{"clock_time": "unknown", "n_people": 9, "n_in_queue": 3, "seats_free": 4, '
+                '"confidence": "medium", '
                 '"notes": "People at the back are partly hidden."}')
     if stub == "guess":
-        return '```json\n{"n_people": "about 9", "n_sitting": 6, "n_standing": 3}\n```'
+        return '```json\n{"n_people": "about 9", "n_in_queue": 3, "seats_free": 4}\n```'
     if stub == "mismatch":
-        return ('{"n_people": 12, "n_sitting": 6, "n_standing": 3, "exit_sign_visible": "no", '
-                '"walkway_blocked": "no", "confidence": "high", "notes": "unknown"}')
+        return ('{"clock_time": "08:40", "n_people": 2, "n_in_queue": 5, "seats_free": 4, '
+                '"confidence": "high", "notes": "unknown"}')
 
     body = {
         "model": model_name,
@@ -183,11 +183,11 @@ def validate(record, schema):
     for k in extra:
         problems.append(f"{k}: not in the schema")
 
-    # A rule the schema cannot say by itself: the parts must add up to the total.
-    counts = [record.get(k) for k in ("n_people", "n_sitting", "n_standing")]
+    # A rule the schema cannot say by itself: the queue is part of the count.
+    counts = [record.get(k) for k in ("n_people", "n_in_queue")]
     if all(isinstance(c, int) and not isinstance(c, bool) for c in counts):
-        if counts[1] + counts[2] != counts[0]:
-            problems.append(f"counts: {counts[1]} sitting + {counts[2]} standing is not {counts[0]} people")
+        if counts[1] > counts[0]:
+            problems.append(f"counts: {counts[1]} in the queue is more than {counts[0]} people")
     return problems
 
 

@@ -94,16 +94,16 @@ query = function(IMAGE_PATH, PROMPT, MODEL){
 
   # Stub mode: no model is called. These fixed replies let you test the checks.
   if (STUB == "1") {
-    return(paste0('{"n_people": 9, "n_sitting": 6, "n_standing": 3, "exit_sign_visible": "unknown", ',
-                  '"walkway_blocked": "no", "confidence": "medium", ',
+    return(paste0('{"clock_time": "unknown", "n_people": 9, "n_in_queue": 3, "seats_free": 4, ',
+                  '"confidence": "medium", ',
                   '"notes": "People at the back are partly hidden."}'))
   }
   if (STUB == "guess") {
-    return('```json\n{"n_people": "about 9", "n_sitting": 6, "n_standing": 3}\n```')
+    return('```json\n{"n_people": "about 9", "n_in_queue": 3, "seats_free": 4}\n```')
   }
   if (STUB == "mismatch") {
-    return(paste0('{"n_people": 12, "n_sitting": 6, "n_standing": 3, "exit_sign_visible": "no", ',
-                  '"walkway_blocked": "no", "confidence": "high", "notes": "unknown"}'))
+    return(paste0('{"clock_time": "08:40", "n_people": 2, "n_in_queue": 5, "seats_free": 4, ',
+                  '"confidence": "high", "notes": "unknown"}'))
   }
 
   body = list(
@@ -189,12 +189,12 @@ validate = function(record, schema){
     problems = c(problems, paste0(k, ": not in the schema"))
   }
 
-  # A rule the schema cannot say by itself: the parts must add up to the total.
-  counts = list(record$n_people, record$n_sitting, record$n_standing)
+  # A rule the schema cannot say by itself: the queue is part of the count.
+  counts = list(record$n_people, record$n_in_queue)
   if (all(sapply(counts, is_whole))) {
-    if (counts[[2]] + counts[[3]] != counts[[1]]) {
-      problems = c(problems, paste0("counts: ", counts[[2]], " sitting + ", counts[[3]],
-                                    " standing is not ", counts[[1]], " people"))
+    if (counts[[2]] > counts[[1]]) {
+      problems = c(problems, paste0("counts: ", counts[[2]], " in the queue is more than ",
+                                    counts[[1]], " people"))
     }
   }
   problems

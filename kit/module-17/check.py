@@ -97,7 +97,7 @@ def check_lang(lang):
 
     code_m, out_m = run_tool(lang, "mismatch", csv_path)
     _, rows_m = read_rows(csv_path)
-    results.append(("C6", "counts that do not add up are refused and add no row",
+    results.append(("C6", "a queue longer than the count is refused and adds no row",
                     code_m != 0 and len(rows_m) == 1, out_m))
 
     shutil.rmtree(folder, ignore_errors=True)

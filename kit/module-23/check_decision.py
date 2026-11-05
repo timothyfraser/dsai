@@ -91,10 +91,11 @@ else:
     nodes = set(re.findall(r"\b\w+\[\"?([^\]\"]+)\"?\]", fence.group(1))) if fence else set()
     boxes = {h.split(":", 1)[1].strip(): b for h, b in sections(arch, "box").items() if ":" in h}
     undecided = sorted(n for n in nodes if n not in boxes
-                       or not field(boxes[n], "Choice") or not field(boxes[n], "Instead of"))
+                       or not said_something(field(boxes[n], "Choice"))
+                       or not said_something(field(boxes[n], "Instead of")))
     check("C1 ARCHITECTURE.md exists and every box has a decision",
           len(nodes) >= 3 and not undecided,
-          f"boxes found {len(nodes)}; boxes with no Choice or Instead of line: {undecided}")
+          f"boxes found {len(nodes)}; boxes with no Choice or Instead of, or one still blank or a <placeholder>: {undecided}")
 
 # 2. THE DECISION LOG ###################################
 
@@ -106,7 +107,7 @@ else:
     entries = sections(log, "d")
     bad = []
     for head, body in entries.items():
-        missing = [f for f in ("Choice", "Alternatives", "Reason", "Evidence") if not field(body, f)]
+        missing = [f for f in ("Choice", "Alternatives", "Reason", "Evidence") if not said_something(field(body, f))]
         if DATE_WORDS.search(head):
             missing.append("a date in the heading")
         if field(body, "Evidence") and not resolves(field(body, "Evidence")):
