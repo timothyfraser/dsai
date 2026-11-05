@@ -38,7 +38,37 @@ See course details in the [`docs/`](docs/) folder! Includes:
 - [📌 READ: Course Schedule](docs/READ_schedule.md)
 
 
-## 🧱 Modules
+<!-- book:start -->
+## 📘 Course book
+
+The course book is live at [https://connect.systems-apps.com/dsai/](https://connect.systems-apps.com/dsai/): 23 modules, each with its page and the kit folder that goes with it.
+
+- Module 1: Set up, and query your first API · [page](https://connect.systems-apps.com/dsai/modules/module-01/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-01)
+- Module 2: Productivity with AI · [page](https://connect.systems-apps.com/dsai/modules/module-02/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-02)
+- Module 3: AI as an API, and evals · [page](https://connect.systems-apps.com/dsai/modules/module-03/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-03)
+- Module 4: Deployment · [page](https://connect.systems-apps.com/dsai/modules/module-04/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-04)
+- Module 5: Function calling, agents with tools, and your first MCP server · [page](https://connect.systems-apps.com/dsai/modules/module-05/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-05)
+- Module 6: Data management · [page](https://connect.systems-apps.com/dsai/modules/module-06/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-06)
+- Module 7: RAG: retrieval-augmented generation, and alternatives · [page](https://connect.systems-apps.com/dsai/modules/module-07/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-07)
+- Module 8: Agents: prompts, roles, rules, many agents · [page](https://connect.systems-apps.com/dsai/modules/module-08/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-08)
+- Module 9: Pipelines and cron · [page](https://connect.systems-apps.com/dsai/modules/module-09/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-09)
+- Module 10: AI in the browser · [page](https://connect.systems-apps.com/dsai/modules/module-10/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-10)
+- Module 11: Evaluation · [page](https://connect.systems-apps.com/dsai/modules/module-11/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-11)
+- Module 12: Better user interfaces · [page](https://connect.systems-apps.com/dsai/modules/module-12/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-12)
+- Module 13: Decision support · [page](https://connect.systems-apps.com/dsai/modules/module-13/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-13)
+- Module 14: Hackathon · [page](https://connect.systems-apps.com/dsai/modules/module-14/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-14)
+- Module 15: A bounded autonomous agent over HTTP · [page](https://connect.systems-apps.com/dsai/modules/module-15/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-15)
+- Module 16: Local agents: a small model, a strict contract, a real job · [page](https://connect.systems-apps.com/dsai/modules/module-16/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-16)
+- Module 17: Vision models · [page](https://connect.systems-apps.com/dsai/modules/module-17/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-17)
+- Module 18: Audio models: listen, transcribe, speak · [page](https://connect.systems-apps.com/dsai/modules/module-18/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-18)
+- Module 19: Geo LLMs: addresses, parcels, places · [page](https://connect.systems-apps.com/dsai/modules/module-19/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-19)
+- Module 20: Models on your phone · [page](https://connect.systems-apps.com/dsai/modules/module-20/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-20)
+- Module 21: APIs that sleep: scale to zero · [page](https://connect.systems-apps.com/dsai/modules/module-21/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-21)
+- Module 22: Data architecture: where each piece of data lives · [page](https://connect.systems-apps.com/dsai/modules/module-22/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-22)
+- Module 23: Finale · [page](https://connect.systems-apps.com/dsai/modules/module-23/) · [kit](https://github.com/timothyfraser/dsai/tree/v2027/kit/module-23)
+<!-- book:end -->
+
+## 🧱 Course folders (2026)
 
 - [00_quickstart](00_quickstart/)
 - [01_query_api](01_query_api/)
