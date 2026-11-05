@@ -1,13 +1,12 @@
 {
-  "name": "room_check",
-  "description": "One row per photo: how many people are in the room, and two safety questions. Any field the model cannot see must be \"unknown\", never a guess.",
+  "name": "coffee_shop_count",
+  "description": "One row per photo of the coffee shop: how busy it is, how long the line is, and how many seats are free. Any field the model cannot see must be \"unknown\", never a guess.",
   "fields": [
-    {"name": "n_people",          "type": "integer", "allow_unknown": true,  "description": "total number of people in the photo"},
-    {"name": "n_sitting",         "type": "integer", "allow_unknown": true,  "description": "number of people sitting"},
-    {"name": "n_standing",        "type": "integer", "allow_unknown": true,  "description": "number of people standing"},
-    {"name": "exit_sign_visible", "type": "choice",  "choices": ["yes", "no", "unknown"], "description": "is an exit sign visible in the photo"},
-    {"name": "walkway_blocked",   "type": "choice",  "choices": ["yes", "no", "unknown"], "description": "is a walkway blocked by furniture, bags or boxes"},
-    {"name": "confidence",        "type": "choice",  "choices": ["high", "medium", "low"], "description": "how sure you are about the counts"},
-    {"name": "notes",             "type": "text",    "allow_unknown": true,  "description": "one short sentence on anything that made the photo hard to read"}
+    {"name": "clock_time",  "type": "text",    "allow_unknown": true,  "description": "the time on a clock or screen in the photo, as HH:MM"},
+    {"name": "n_people",    "type": "integer", "allow_unknown": true,  "description": "total number of people in the photo, staff included"},
+    {"name": "n_in_queue",  "type": "integer", "allow_unknown": true,  "description": "number of people standing in line to order"},
+    {"name": "seats_free",  "type": "integer", "allow_unknown": true,  "description": "number of seats with nobody and nothing on them"},
+    {"name": "confidence",  "type": "choice",  "choices": ["high", "medium", "low"], "description": "how sure you are about the counts"},
+    {"name": "notes",       "type": "text",    "allow_unknown": true,  "description": "one short sentence on anything that made the photo hard to read"}
   ]
 }
