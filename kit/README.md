@@ -1,3 +1,5 @@
+The course book these folders belong to is live at [https://connect.systems-apps.com/dsai/](https://connect.systems-apps.com/dsai/).
+
 # Course kit
 
 This folder holds the course kit: small scripts, check scripts and example files written for the course book, one folder per module. The rest of this repository is the instructor's course material; the kit sits beside it and does not change it.
