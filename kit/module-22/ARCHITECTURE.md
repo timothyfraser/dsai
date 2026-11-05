@@ -38,4 +38,4 @@ Brussels traffic API ──▶ ingest job (every 15 min) ──▶ [Postgres tab
 
 **Reason:** the job writes every 15 minutes and the deployed app must see new rows without a redeploy; a file in git cannot do that, and Postgres takes many writers and per-row access rules.
 
-**Evidence:** the course's `traffic.db` held 59,420 rows in 8.1 MB after 1,187 scheduled runs, far under the free plan's 500 MB database limit, and the 1,187 scheduled commits are 1,187 copies of a binary file in git history.
+**Evidence:** the course's `traffic.db` held 59,420 rows in 8.1 MB after more than two thousand scheduled runs (its Python workflow says it fired 1,187 times, its R workflow 1,115), far under the free plan's 500 MB database limit, and every run that committed added a copy of a binary file to git history.

@@ -100,6 +100,6 @@ check("R9 no key-shaped string anywhere in the folder", not hits, "in: " + ", ".
 
 print(f"{sum(results)} of {len(results)} checks pass.")
 print("A reviewer reads the rest: the app starts (lab check 1), real rows (2), a failure shows a "
-      "message (3), the README follows two rules (6), the diagram renders (7), "
-      "every teammate has a commit (8).")
+      "message (3), the README follows two rules (6), every teammate has a commit (8); "
+      "a person also checks that the diagram renders.")
 sys.exit(0 if all(results) else 1)

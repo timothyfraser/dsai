@@ -25,6 +25,12 @@ PATTERNS = {
 
 # 1. SCAN ###################################
 
+# A path that does not exist scans nothing, so it must fail, not pass with 0 files.
+missing = [str(root) for root in ROOTS if not root.exists()]
+if missing:
+    print(f"FAIL  C5 no secret key in the page or the repo  (does not exist: {', '.join(missing)})")
+    sys.exit(1)
+
 hits = []
 scanned = 0
 for root in ROOTS:
