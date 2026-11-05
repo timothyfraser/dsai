@@ -1,0 +1,79 @@
+{
+  "assumptions": {
+    "arrivals": "random (Poisson): cold_fraction = exp(-idle_timeout_s / mean_gap_s)",
+    "days_per_month": 30,
+    "left_out": "idle billing, network transfer, storage",
+    "memory_gb": 0.5,
+    "model_calls_per_request": 1,
+    "vcpu": 1
+  },
+  "inputs": {
+    "example": true,
+    "measurements_sha256": "2693c1e970d06f53",
+    "prices_sha256": "4ba7ff08da728dee"
+  },
+  "keep_warm": {
+    "memory_gb_hours_month": 360.0,
+    "processes": 1
+  },
+  "levels": [
+    {
+      "cold_fraction": 0.9942,
+      "cold_gb_s_month": 599.4,
+      "cold_starts_month": 2983,
+      "fixed_host": {
+        "digitalocean_fixed": 5
+      },
+      "gb_s_month": 32.4,
+      "host_cost": {
+        "aws_lambda": 0.0,
+        "google_cloud_run": 0.0
+      },
+      "mean_gap_s": 864.0,
+      "model_calls_month": 3000,
+      "model_cost": null,
+      "requests_day": 100,
+      "requests_month": 3000,
+      "vcpu_s_month": 64.8
+    },
+    {
+      "cold_fraction": 0.5606,
+      "cold_gb_s_month": 33797.3,
+      "cold_starts_month": 168187,
+      "fixed_host": {
+        "digitalocean_fixed": 5
+      },
+      "gb_s_month": 3240.0,
+      "host_cost": {
+        "aws_lambda": 0.0,
+        "google_cloud_run": 0.0
+      },
+      "mean_gap_s": 8.64,
+      "model_calls_month": 300000,
+      "model_cost": null,
+      "requests_day": 10000,
+      "requests_month": 300000,
+      "vcpu_s_month": 6480.0
+    },
+    {
+      "cold_fraction": 0.0031,
+      "cold_gb_s_month": 1849.0,
+      "cold_starts_month": 9201,
+      "fixed_host": {
+        "digitalocean_fixed": 5
+      },
+      "gb_s_month": 32400.0,
+      "host_cost": {
+        "aws_lambda": 0.4,
+        "google_cloud_run": 0.4
+      },
+      "mean_gap_s": 0.864,
+      "model_calls_month": 3000000,
+      "model_cost": null,
+      "requests_day": 100000,
+      "requests_month": 3000000,
+      "vcpu_s_month": 64800.0
+    }
+  ],
+  "made_by": "cost_estimate.py"
+}

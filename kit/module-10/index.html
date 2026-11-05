@@ -1,14 +1,14 @@
 <!doctype html>
 <!--
   index.html
-  A browser front door for your team's system: ask the API, and fall back to a model on this device.
+  A browser front door for your team's system: ask the API, and answer in the browser when the rule says so.
   Course kit, module 10
 
-  Serve the kit folder (not this folder), so ../module-20/edge.js can load:
+  Serve the kit folder, so Module 20 can load ../module-10/edge.js too:
     cd ..   (you are now in kit/)
     npx http-server -p 8010 .
     open http://localhost:8010/module-10/
-  Address options: ?api=<url of your /ask endpoint>  ?timeout=<ms>  ?stub=1 (fake on-device model)
+  Address options: ?api=<url of your /ask endpoint>  ?timeout=<ms>  ?stub=1 (fake browser model)
 -->
 <html lang="en">
 <head>
@@ -29,7 +29,7 @@
   button:disabled { opacity: .5; }
   #out { min-height: 3em; padding: 12px; border: 1px solid var(--line); border-radius: 6px; }
   #out[data-kind="server"] { border-color: var(--ok); }
-  #out[data-kind="device"], #out[data-kind="error"] { border-color: var(--warn); }
+  #out[data-kind="builtin"], #out[data-kind="shipped"], #out[data-kind="none"], #out[data-kind="error"] { border-color: var(--warn); }
   #path { font-weight: 600; }
   dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: .9rem; }
   dt { opacity: .7; }
@@ -39,12 +39,13 @@
 <body>
   <!-- 2. THE PAGE: a question box, one answer, and what answered it ############ -->
   <h1>Ask the team system</h1>
-  <p>This page asks the team's server first. If the server or the network is down, a small model on this device answers instead, and the answer says so.</p>
+  <p>This page follows the rule in rules.json: <span id="rule">...</span> Every answer says which path gave it.</p>
   <p id="status" role="status">Starting...</p>
   <form id="form">
     <label for="q" hidden>Question</label>
     <input id="q" placeholder="Type a question for the system" autocomplete="off">
     <button id="ask" disabled>Ask</button>
+    <button id="mic" class="quiet" type="button" aria-label="Speak the question">Speak</button>
   </form>
   <div id="out" aria-live="polite"></div>
   <!-- 3. WHAT TO MEASURE: which path answered, and how long it took ############ -->
@@ -52,8 +53,12 @@
     <dt>Answered by</dt><dd id="path">-</dd>
     <dt>Time to answer</dt><dd id="ms">-</dd>
     <dt>Server</dt><dd id="api">-</dd>
+    <dt>Engine</dt><dd id="engine">-</dd>
+    <dt>Built-in model</dt><dd id="builtin">-</dd>
+    <dt>Speech</dt><dd id="speech">-</dd>
   </dl>
-  <p><button id="prep" class="quiet" type="button">Download the offline model (a few hundred MB, once)</button></p>
+  <p><button id="prep" class="quiet" type="button">Download the offline model (a few hundred MB, once)</button>
+     <button id="save" class="quiet" type="button">Save this device's numbers</button></p>
   <h2>Recent answers</h2>
   <ol id="log"></ol>
   <script type="module" src="./app.js"></script>

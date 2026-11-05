@@ -1,0 +1,28 @@
+{
+  "about": "Labelled questions for refusal.mjs. in_scope: a crew member could ask it and one note answers it (note is that note's id); several are paraphrases that share few words with the note. out_of_scope: no note answers it; several share words with a note on purpose. Write your own set when you replace the notes.",
+  "in_scope": [
+    {"q": "How do I take a water sample from the stream?", "note": "n2"},
+    {"q": "Which way should I face when I fill a bottle?", "note": "n2"},
+    {"q": "What should I write on the bottle label?", "note": "n4"},
+    {"q": "Can I use a nickname for the site on the label?", "note": "n4"},
+    {"q": "How many hours do samples have to reach the lab?", "note": "n5"},
+    {"q": "What do I pack before heading out?", "note": "n1"},
+    {"q": "Who should I tell where I am going?", "note": "n1"},
+    {"q": "The pH number keeps creeping up. What now?", "note": "n3"},
+    {"q": "How long do I hold the probe in the water?", "note": "n3"},
+    {"q": "Is it safe to wade in when the creek is deep and fast?", "note": "n6"},
+    {"q": "What if there is a thunderstorm?", "note": "n6"}
+  ],
+  "out_of_scope": [
+    {"q": "Who won the football game last night?"},
+    {"q": "What is the capital of France?"},
+    {"q": "How do I fix a flat bike tyre?"},
+    {"q": "What time does the lab open at the weekend?"},
+    {"q": "Can you recommend a good water bottle to buy?"},
+    {"q": "What is the weather forecast for tomorrow?"},
+    {"q": "Which phone has the best camera?"},
+    {"q": "How do I calibrate a microscope?"},
+    {"q": "How deep is the ocean?"},
+    {"q": "Is stream water safe to drink?"}
+  ]
+}

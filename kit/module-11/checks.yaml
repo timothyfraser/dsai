@@ -1,5 +1,5 @@
 # checks.yaml
-# A sample V&V plan: the machine checks for one AI system, one entry per check.
+# A sample verification and validation plan: the machine checks for one AI system, one entry per check.
 # Course kit, module 11
 #
 # The sample system is a reporter that writes short paragraphs about the course's

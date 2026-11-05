@@ -23,3 +23,11 @@ fi
 
 # 2. RUN THE CHECKS ###################################
 python3 check_geo.py
+
+# 3. RUN THE DECISION CHECK ###################################
+# DECISION_STUB=1 checks the saved example, DECISION_STUB=bad a saved bad one (it must fail).
+# With LLM_STUB=1 and no DECISION_STUB set, the saved example is used; otherwise your DECISION.md.
+if [ "${LLM_STUB:-0}" = "1" ] && [ -z "${DECISION_STUB:-}" ]; then
+  export DECISION_STUB=1
+fi
+python3 check_decision.py

@@ -7,5 +7,9 @@
     {"id": "n4", "title": "Labelling", "text": "Label every bottle with the site code, the sample number and the time. Use the site code from the map, such as FC-03, never a nickname."},
     {"id": "n5", "title": "Storing samples", "text": "Keep samples in the cooler with ice packs, out of the sun. Deliver them to the lab within six hours of collection."},
     {"id": "n6", "title": "When to stop", "text": "Do not sample if the water is above your knees, moving fast, or after lightning. Record the site as skipped with the reason and leave."}
-  ]
+  ],
+  "measured": {
+    "about": "Fill this in from a real phone, not a laptop: one object per phone and model, from Step 3 and Step 4.",
+    "phones": []
+  }
 }

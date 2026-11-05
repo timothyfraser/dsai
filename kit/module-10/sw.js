@@ -2,10 +2,11 @@
 // A service worker: a small script the browser keeps beside the page and runs between the page and the network.
 // Course kit, module 10
 
-// 1. ON INSTALL: save the page's own files, including Module 20's engine ###################################
-const CACHE = "front-door-v1";
+// 1. ON INSTALL: save the page's own files, including the engine and the rule ###################################
+const CACHE = "front-door-v2";   // change the name when the file list changes, so old copies are dropped
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["./", "./index.html", "./app.js", "../module-20/edge.js"])));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["./", "./index.html", "./app.js", "./edge.js", "./worker.js", "./measure.js",
+    "./builtin.js", "./voice.js", "./rules.json"])));
   self.skipWaiting();
 });
 self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));

@@ -1,0 +1,6 @@
+/* the app's CSS: every colour and size is a token */
+body { background: var(--paper); color: var(--ink); font-size: var(--text-base); }
+.answer { background: var(--sheet); padding: var(--space-3); border-radius: var(--radius);
+          transition: opacity var(--motion-fast) ease-out; }
+.answer .source { color: var(--ink-2); font-size: var(--text-sm); }
+@media (prefers-reduced-motion: reduce) { .answer { transition: none; } }

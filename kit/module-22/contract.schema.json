@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GET /traffic/hourly",
+  "description": "What the API returns for one monitor and one hour. The page and the API both obey this file.",
+  "type": "object",
+  "required": ["contract_version", "monitor_id", "hour_start_utc", "vehicles_total", "speed_mean_kmh", "n_minutes", "built_at_utc"],
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {"type": "string", "const": "1.0.0"},
+    "monitor_id": {"type": "string", "pattern": "^[A-Z0-9_]+$"},
+    "hour_start_utc": {"type": "string", "format": "date-time"},
+    "vehicles_total": {"type": ["integer", "null"], "minimum": 0},
+    "speed_mean_kmh": {"type": ["number", "null"], "minimum": 0, "maximum": 200},
+    "n_minutes": {"type": "integer", "minimum": 0, "maximum": 60},
+    "built_at_utc": {"type": "string", "format": "date-time"}
+  }
+}

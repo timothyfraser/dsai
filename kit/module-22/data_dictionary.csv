@@ -1,0 +1,8 @@
+column,meaning,type,unit,allowed,null_means,source
+contract_version,version of the contract this response follows,string,none,semantic version such as 1.0.0,never null,contract.schema.json
+monitor_id,the traffic monitor the numbers describe,string,none,an id in the monitors table,never null,traffic.monitor_id
+hour_start_utc,start of the hour the numbers cover,timestamp,UTC,whole hours,never null,traffic.observed_at truncated to the hour
+vehicles_total,vehicles counted by the monitor in that hour,integer,vehicles,0 or more,no minute in the hour had a count,sum of traffic.vehicles
+speed_mean_kmh,mean speed of the vehicles counted in that hour,number,km/h,0 to 200,no vehicle passed so no speed exists,mean of traffic.speed
+n_minutes,minutes in the hour that reported a count,integer,minutes,0 to 60,never null,count of traffic rows
+built_at_utc,when this answer was computed,timestamp,UTC,any,never null,clock of the API or the cache job

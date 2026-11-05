@@ -1,13 +1,13 @@
 # check_vv.py
-# Run a team's V&V plan: read checks.yaml, run every machine check it lists
+# Run a team's verification and validation plan: read checks.yaml, run every machine check it lists
 # Course kit, module 11
 #
-# Topic: Verification and validation (V&V) for AI systems
+# Topic: Verification and validation for AI systems
 #
 # A requirement you cannot check is a wish. This script reads your checks.yaml,
 # runs your system once, and then runs each listed check against what the system
 # wrote, one PASS or FAIL line per check. Then it runs the lab's own checks
-# (C1 to C6) on the plan itself: is every check traced to a requirement, is the
+# (C1 to C6) on the plan itself: does every threshold have a reason, is every check traced to a requirement, is the
 # human sample big enough, and can your checks fail at all?
 #
 # If you haven't already, install these packages...
@@ -91,7 +91,7 @@ def check_schema(rows, c):
     for row in rows:
         for field, kind in c["fields"].items():
             value = row.get(field)
-            # bool is a kind of int in Python, so test it on its own.
+            # True and False are not whole numbers for this check, so reject them.
             wrong_type = value is None or (kind == "int" and isinstance(value, bool)) \
                 or not isinstance(value, TYPES[kind])
             if wrong_type:
@@ -179,9 +179,14 @@ req_ids = {r["id"] for r in reqs}
 # C1: a requirements table, each row with a kind and an acceptance criterion.
 bad = [r.get("id") for r in reqs if r.get("kind") not in ("verification", "validation")
        or not str(r.get("acceptance", "")).strip()]
-report("PASS" if len(reqs) >= MIN_CHECKS and not bad else "FAIL",
-       "C1 requirements table: each row has a kind and an acceptance criterion",
-       f"{len(reqs)} rows" + (f", incomplete {bad}" if bad else ""))
+# A threshold with no reason is a number someone picked. Name the row.
+no_reason = [r.get("id") for r in reqs if str(r.get("threshold", "")).strip()
+             and not (str(r.get("why_this_threshold", "")).strip()
+                      and str(r.get("alternative_considered", "")).strip())]
+report("PASS" if len(reqs) >= MIN_CHECKS and not bad and not no_reason else "FAIL",
+       "C1 requirements table: each row has a kind, an acceptance criterion, and a reason for any threshold",
+       f"{len(reqs)} rows" + (f", incomplete {bad}" if bad else "")
+       + (f", threshold without a reason {no_reason}" if no_reason else ""))
 
 # C2: at least five machine checks, each traced to a requirement that exists.
 untraced = [c["id"] for c in plan["checks"] if c.get("requirement") not in req_ids]
