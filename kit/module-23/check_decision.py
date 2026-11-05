@@ -46,6 +46,11 @@ def read(name):
     p = REPO / name
     return p.read_text(encoding="utf-8") if p.exists() else None
 
+def said_something(line):
+    """True for a line with words in it; False for a blank or a '<placeholder>' line."""
+    t = line.strip()
+    return bool(t) and not (t.startswith("<") and t.endswith(">"))
+
 def sections(text, prefix):
     """Split a Markdown file into {heading: body} for '## <prefix>...' headings."""
     out, head = {}, None
@@ -152,11 +157,15 @@ check("C6 no key in the repo", not leaks, f"look at: {sorted(set(leaks))}")
 standup = read("STANDUP.md") or ""
 words = len(re.findall(r"[A-Za-z0-9']+", standup))
 low = standup.lower()
-parts = [q for q in ("what it is", "why this architecture", "what it costs", "where it fails") if q not in low]
-said = [h for h in HOLLOW if h in low]
+answers = {h.lower(): b for h, b in sections(standup, "").items()}
+# A part counts only if its section says something: a blank or a <placeholder> line is no answer.
+parts = [q for q in ("what it is", "why this architecture", "what it costs", "where it fails")
+         if not any(said_something(l) for l in answers.get(q, "").splitlines())]
+# Whole words only: "the air" and "the aim" are not "the ai".
+said = [h for h in HOLLOW if re.search(rf"\b{re.escape(h)}\b", low)]
 check(f"C7 STANDUP.md answers four questions in under {MAX_STANDUP_WORDS} words, owning the work",
       standup and words < MAX_STANDUP_WORDS and not parts and not said,
-      f"{words} words; missing parts {parts}; hollow phrases {said}")
+      f"{words} words; parts unanswered {parts}; hollow phrases {said}")
 
 # C8: the four columns, each with evidence a reviewer can open.
 selfa = read("SELF-ASSESSMENT.md") or ""
@@ -167,7 +176,8 @@ gaps = []
 for col in ("build", "verify", "productionise", "explain"):
     row = rows.get(col)
     links = (re.findall(r"\(([^)]+)\)", row[-1]) + re.findall(r"`([^`]+)`", row[-1])) if row else []
-    if not row or not links or not all(resolves(l) for l in links):
+    # The "Our answer" cell must hold an answer, not a blank or a <placeholder>.
+    if not row or not said_something(row[2]) or not links or not all(resolves(l) for l in links):
         gaps.append(col)
 check("C8 SELF-ASSESSMENT.md fills all four columns with evidence that opens", not gaps,
       f"columns without working evidence: {gaps}")

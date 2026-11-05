@@ -63,8 +63,11 @@ def read(name):
 
 def sections(md):
     # Split a Markdown file into {heading: body} on '## ' headings.
+    # Template lines that start with "Guide:" are notes, not answers, so they are dropped.
     out, head = {}, None
     for line in md.splitlines():
+        if line.startswith("Guide:"):
+            continue
         if line.startswith("## "):
             head = line[3:].strip()
             out[head] = ""
@@ -226,8 +229,10 @@ def check_states():
         from playwright.sync_api import sync_playwright
     except ImportError:
         return report(6, "SKIP", "five states reachable, no sideways scroll at 390", "Playwright for Python is not installed")
-    if STUB or not url or not glob:
-        return report(6, "SKIP", "five states reachable, no sideways scroll at 390", "needs UI_URL and UI_API_GLOB, not set in stub mode")
+    if STUB:
+        return report(6, "SKIP", "five states reachable, no sideways scroll at 390", "stub mode: the fixture has no app to drive")
+    if not url or not glob:
+        return report(6, "SKIP", "five states reachable, no sideways scroll at 390", "set UI_URL to your page and UI_API_GLOB to your API path")
     replies = {"success": (200, {"answer": "Stub answer", "source": "stub.csv, row 1"}),
                "stale": (200, {"answer": "Stub answer", "source": None}),
                "error": (500, {"detail": "stub failure"})}
@@ -289,7 +294,7 @@ def check_rationale():
     if md is None:
         return report(8, "FAIL", "rationale: one page, the four choices, two rejected", "no RATIONALE.md")
     sec = {k.lower(): v.strip().lower() for k, v in sections(md).items()}
-    words = len(md.split())
+    words = len(" ".join(l for l in md.splitlines() if not l.startswith("Guide:")).split())
     problems = []
     if words >= MAX_WORDS:
         problems.append(f"{words} words, must be under {MAX_WORDS}")
