@@ -9,7 +9,7 @@
     {"id": "n6", "title": "When to stop", "text": "Do not sample if the water is above your knees, moving fast, or after lightning. Record the site as skipped with the reason and leave."}
   ],
   "measured": {
-    "about": "Fill this in from a real phone, not a laptop: one object per phone, app and model, from Step 4 and Step 5. Fields: phone, app (edge-gallery, pocketpal or page), model, job, first_tps, after_ten_tps, slowest_reply_ms, warm.",
+    "about": "Fill this in from a real phone, not a laptop: one object per phone, app and model, from Step 3 and Step 4. Fields: phone, app (edge-gallery, pocketpal or page), model, job, first_tps, after_ten_tps, slowest_reply_ms, warm.",
     "phones": []
   }
 }
