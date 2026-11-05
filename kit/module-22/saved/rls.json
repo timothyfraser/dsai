@@ -1,0 +1,5 @@
+[
+  {"schemaname": "public", "tablename": "traffic", "rowsecurity": true},
+  {"schemaname": "public", "tablename": "monitors", "rowsecurity": true},
+  {"schemaname": "public", "tablename": "run_records", "rowsecurity": true}
+]

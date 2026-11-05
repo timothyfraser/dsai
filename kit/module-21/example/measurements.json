@@ -1,0 +1,159 @@
+{
+  "example": true,
+  "host": "stub (pretend host)",
+  "url": "http://127.0.0.1:8771",
+  "route": "/health",
+  "measured_at": "2026-11-04T22:40:21Z",
+  "idle_timeout_s": 5.0,
+  "idle_wait_s": 11.0,
+  "client_timeout_s": 30.0,
+  "cold_ms": [
+    410.9,
+    401.5,
+    401.9
+  ],
+  "warm_ms": [
+    21.7,
+    21.4,
+    21.5,
+    21.5,
+    21.6,
+    21.6,
+    21.7,
+    21.6,
+    21.4,
+    21.2,
+    21.3,
+    21.7,
+    21.9,
+    21.6,
+    21.8,
+    21.7,
+    21.5,
+    21.9,
+    21.4,
+    21.5
+  ],
+  "cold_median_ms": 401.9,
+  "fly_cold_median_ms": 1180.0,
+  "warm_median_ms": 21.6,
+  "warm_p95_ms": 21.9,
+  "statuses": [
+    200
+  ],
+  "about": "AN EXAMPLE, measured on stub_host.py (a pretend host with a 5 s idle timeout), not on any real server. memory_gb, vcpu and model_calls_per_request are assumptions typed in by hand, as your team will type its own.",
+  "memory_gb": 0.5,
+  "model_calls_per_request": 1,
+  "load": {
+    "route": "/health",
+    "count": 20,
+    "rate_per_s": 2.0,
+    "status_counts": {
+      "200": 20
+    },
+    "requests": [
+      {
+        "status": 200,
+        "ms": 412.6,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 22.2,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 21.9,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 21.5,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 21.8,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 22.2,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 21.9,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 21.7,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 22.9,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 22.1,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 21.7,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 21.8,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 21.5,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 22.3,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 22.3,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 21.5,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 21.9,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 21.8,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 21.9,
+        "retry_after": null
+      },
+      {
+        "status": 200,
+        "ms": 21.5,
+        "retry_after": null
+      }
+    ],
+    "explained": {}
+  },
+  "vcpu": 1
+}

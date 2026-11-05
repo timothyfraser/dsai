@@ -3,29 +3,20 @@
 //   1. Find the best matching note first. If nothing matches well, refuse without asking the model.
 //   2. The model must reply with JSON: {"answer": "...", "source": "<note id>"}.
 //   3. The answer must arrive within the time budget, or the page says it ran out of time.
-import { loadEngine, memoryMB } from "./edge.js";
+import { loadEngine, memoryMB } from "../module-10/edge.js";   // the browser engine, shared with Module 10
+import { bestNote } from "./match.js";                         // the note matcher, shared with refusal.mjs
 
-const TIME_BUDGET_MS = 20000;  // 20 seconds: long enough for a CPU, short enough to be useful in the field
+// The two numbers that decide when the assistant gives up and when it refuses. TIME_BUDGET_MS comes
+// from the phone rows in notes.json "measured"; MIN_SCORE from the refusal rates refusal.mjs reports.
+const TIME_BUDGET_MS = 20000;  // 20 seconds: the starting guess; replace it with your phone's number
 const MIN_SCORE = 2;           // how many shared words a note needs before we trust it
 
 const $ = (id) => document.getElementById(id);
 const say = (t) => { $("status").textContent = t; };
 let engine = null, notes = [];
 
-// Words that carry no meaning for matching.
-const STOP = new Set("a an the and or of to in on at is are was be do i you it my what how when where which why with for from by can should".split(" "));
-const words = (s) => s.toLowerCase().match(/[a-z0-9-]+/g)?.filter((w) => !STOP.has(w) && w.length > 2) ?? [];
-
-// Step 1: retrieval by shared words. Small, readable, and it needs no second model.
-export function bestNote(question) {
-  const q = new Set(words(question));
-  let best = null, score = 0;
-  for (const n of notes) {
-    const s = words(n.title + " " + n.text).filter((w) => q.has(w)).length;
-    if (s > score) { best = n; score = s; }
-  }
-  return { note: best, score };
-}
+// Step 1: retrieval by shared words, in match.js (refusal.mjs scores your labelled questions with it).
+// bestNote(question, notes) returns the best note and its score: how many words it shares with the question.
 
 // Step 2: the contract check. Anything that is not valid JSON with a known source is rejected.
 export function checkReply(text, noteId) {
@@ -39,7 +30,7 @@ export function checkReply(text, noteId) {
 
 async function ask(question) {
   const t0 = performance.now();
-  const { note, score } = bestNote(question);
+  const { note, score } = bestNote(question, notes);
   if (!note || score < MIN_SCORE) {
     return { kind: "refused", text: "That is outside my field notes. I can only answer from them.", ms: Math.round(performance.now() - t0) };
   }

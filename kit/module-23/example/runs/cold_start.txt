@@ -1,0 +1,2 @@
+Example run record for the Finale lab's checks (a fixture, not a real run).
+A real team saves its measured cold-start times here (Module 21).

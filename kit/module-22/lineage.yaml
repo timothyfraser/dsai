@@ -1,0 +1,21 @@
+# lineage.yaml
+# One number, three places it must agree. check_lineage.py reads this file.
+# Keep it flat: one "key: value" per line.
+
+number: vehicles counted at monitor SGN02 in the 08:00 UTC hour
+tolerance: 0
+
+# The store hop: the SQL that defines the number.
+store_sql: SELECT SUM(vehicles) FROM traffic WHERE monitor_id = 'SGN02' AND observed_at >= '2026-04-15T08:00:00Z' AND observed_at < '2026-04-15T09:00:00Z'
+store_db: traffic.db
+store_seed: saved/traffic_sample.sql
+
+# The API hop: the request and the field that carries the number.
+api_url: http://localhost:8000/traffic/hourly?monitor_id=SGN02&hour=2026-04-15T08:00:00Z
+api_field: vehicles_total
+api_saved: saved/api_response.json
+
+# The page hop: the page and the element that shows the number.
+page_url: http://localhost:5173/
+page_selector: #vehicles-total
+page_saved: saved/page.html

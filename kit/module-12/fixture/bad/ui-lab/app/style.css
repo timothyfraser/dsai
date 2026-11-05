@@ -1,0 +1,3 @@
+body { background: var(--paper); color: #333333; }
+.answer { animation: slide-in 600ms ease-in; }
+@keyframes slide-in { from { transform: translateX(-40px); } to { transform: none; } }

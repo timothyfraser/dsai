@@ -1,0 +1,10 @@
+{
+  "rule": "The team server answers first; the browser answers only when the server is down, too slow or out of reach, and every browser answer is labelled.",
+  "timeout_ms": 8000,
+  "when": {
+    "server_down": "browser",
+    "server_slow": "browser",
+    "offline": "browser"
+  },
+  "browser_order": ["builtin", "shipped"]
+}

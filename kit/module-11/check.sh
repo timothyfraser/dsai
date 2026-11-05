@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # check.sh
-# Run the team's V&V plan: every machine check in checks.yaml, then the lab's checks.
+# Run the team's verification and validation plan: every machine check in checks.yaml, then the lab's checks.
 # Course kit, module 11
 #
 # Copy this folder into your repo, put your checks.yaml next to this file, then:

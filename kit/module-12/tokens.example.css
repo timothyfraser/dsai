@@ -1,0 +1,56 @@
+/* tokens.example.css
+   A starting tokens file for the Module 12 lab
+   Course kit, module 12
+
+   A design token is a named design value, stored once and used everywhere.
+   Copy this file to ui-lab/tokens.css and change the values, not the names,
+   until your brief is met. The app's own CSS then says var(--ink), never a hex.
+   check.py reads the :root block for light, the dark block for dark, and every
+   "pair:" comment below as a text-on-background pair that must reach 4.5 to 1. */
+
+/* 1. LIGHT THEME (the default) */
+:root {
+  /* colour roles: one job per colour */
+  --paper: #F7FBFC;      /* page background */
+  --sheet: #FFFFFF;      /* cards */
+  --ink: #12303A;        /* body text */
+  --ink-2: #3C5A64;      /* secondary text */
+  --accent: #005F78;     /* the primary action, links, focus: nothing else */
+  --danger: #A4262C;     /* the error state only */
+
+  /* type scale: four fixed sizes, so headings and body never drift */
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+
+  /* spacing scale: every gap is one of these */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 40px;
+
+  --radius: 8px;
+  --motion-fast: 150ms;  /* a state change */
+  --motion-slow: 300ms;  /* a panel arriving */
+}
+
+/* 2. DARK THEME (when the device asks for it, unless the reader picked light) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0B2531;
+    --sheet: #0E2C3A;
+    --ink: #EAF6F8;
+    --ink-2: #B5D3DA;
+    --accent: #8FD6E4;
+    --danger: #FFB3B0;
+  }
+}
+
+/* 3. THE PAIRS THIS INTERFACE USES (check.py measures each, in both themes)
+   pair: --ink on --paper
+   pair: --ink on --sheet
+   pair: --ink-2 on --sheet
+   pair: --accent on --sheet
+   pair: --danger on --sheet */

@@ -1,7 +1,7 @@
-id,requirement,kind,acceptance,check
-R1,Every output is a record the next program can read,verification,every row has the listed fields with the listed types and Likert scores from 1 to 5,V1
-R2,Reports state the numbers in the source data correctly,verification,every golden-set report contains its expected figure,V2
-R3,Reports read like a government report,verification,no row uses the hyperbole words from the manual quality control script,V3
-R4,The system declines questions the data cannot answer,verification,every out-of-scope request is refused,V4
-R5,The AI judge rates accuracy the way a person does,validation,the judge is within 1 point of the human rating on at least 80% of a sample of 10 or more,V5
-R6,Reports are short enough to read in a briefing,validation,every report is 60 words or fewer,V6
+id,requirement,kind,acceptance,check,threshold,why_this_threshold,alternative_considered
+R1,Every output is a record the next program can read,verification,every row has the listed fields with the listed types and Likert scores from 1 to 5,V1,100% of records,one unreadable record stops the next program,so a false pass costs a crash downstream,"allowing 95%, rejected because the failures would be silent"
+R2,Reports state the numbers in the source data correctly,verification,every golden-set report contains its expected figure,V2,6 of 6 golden items,a wrong figure in a report is the failure users act on,and the set is only six items so one miss is 17%,"5 of 6, rejected because a wrong figure is a false pass we cannot afford"
+R3,Reports read like a government report,verification,no row uses the hyperbole words from the manual quality control script,V3,0 rows with a hype word,the word list is short and exact so any hit is a real break,and a false fail only costs a rewrite,"allowing up to 10% of rows, rejected because the list is already narrow"
+R4,The system declines questions the data cannot answer,verification,every out-of-scope request is refused,V4,all refused (and at least 1 case),one answered out-of-scope question is an invented answer,and a false pass here reaches a user,"90% of refusals, rejected because each miss is a made-up answer"
+R5,The AI judge rates accuracy the way a person does,validation,the judge is within 1 point of the human rating on at least 80% of a sample of 10 or more,V5,80% within 1 point on at least 10 items,we want most scores close without demanding exact matches on a 5-point scale,and ten items is the smallest sample where one disagreement moves the rate by 10 points,"exact agreement of 70%, rejected because adjacent scores are noise on a 5-point scale"
+R6,Reports are short enough to read in a briefing,validation,every report is 60 words or fewer,V6,60 words per report,a briefing reader stops after a short paragraph,and a long report is a false fail that only costs an edit,"100 words, rejected because the briefing reader stops earlier"

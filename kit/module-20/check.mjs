@@ -2,7 +2,8 @@
 // One-time install, from this folder:  npm install playwright   then   npx playwright install chromium
 //   EDGE_STUB=1 node check.mjs      fake model, no network needed (what CI runs)
 //   node check.mjs                  the real model (needs the network for the first load)
-// It serves this folder on a local port, opens the page, and runs four checks:
+// Your written decision on MIN_SCORE and TIME_BUDGET_MS has its own check: node decision.mjs
+// It serves the kit folder on a local port (the engine is ../module-10/edge.js), opens the page, and runs four checks:
 //   1. the page starts and reports its engine
 //   2. a question inside the notes gets an answer, with its source, within the time budget
 //   3. a question outside the notes is refused
@@ -27,18 +28,20 @@ catch (e) {
 }
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const STUB = process.env.EDGE_STUB === "1";
-const BUDGET_MS = 20000;
+const KIT = path.dirname(HERE);   // serve kit/, so ../module-10/edge.js (the shared engine) resolves
+// The time budget is read from app.js, so the check tests the number you chose, not a copy of it.
+const BUDGET_MS = Number(fs.readFileSync(path.join(HERE, "app.js"), "utf8").match(/const TIME_BUDGET_MS = (\d+)/)[1]);
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".json": "application/json" };
 
 const server = http.createServer((req, res) => {
   const p = decodeURIComponent(new URL(req.url, "http://x").pathname);
-  const file = path.join(HERE, p === "/" ? "index.html" : p);
-  if (!file.startsWith(HERE) || !fs.existsSync(file)) { res.writeHead(404); return res.end(); }
+  const file = path.join(KIT, p.endsWith("/") ? p + "index.html" : p);
+  if (!file.startsWith(KIT) || !fs.existsSync(file)) { res.writeHead(404); return res.end(); }
   res.writeHead(200, { "content-type": TYPES[path.extname(file)] || "application/octet-stream" });
   fs.createReadStream(file).pipe(res);
 });
 await new Promise((r) => server.listen(0, "127.0.0.1", r));
-const url = "http://127.0.0.1:" + server.address().port + "/" + (STUB ? "?stub=1" : "");
+const url = "http://127.0.0.1:" + server.address().port + "/module-20/" + (STUB ? "?stub=1" : "");
 
 let failed = 0;
 const check = (n, label, ok, detail) => {

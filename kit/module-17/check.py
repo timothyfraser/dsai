@@ -125,5 +125,19 @@ for lang in langs:
             failed += 1
             print("      " + detail.strip().replace("\n", "\n      ")[:1500])
 
+# 5. THE DECISION FILE (C9) #################################
+
+env9 = dict(os.environ)
+args9 = [sys.executable, os.path.join(HERE, "check_decision.py")]
+if "RECORD_SCHEMA" not in os.environ and "DECISION_STUB" not in os.environ:
+    env9["DECISION_STUB"] = "1"  # the kit's own schema: check the sample decision
+elif "DECISION_STUB" not in os.environ:
+    args9.append(os.environ.get("DECISION_FILE", "DECISION.md"))
+done9 = subprocess.run(args9, env=env9, capture_output=True, text=True, timeout=60)
+print(f"{'PASS' if done9.returncode == 0 else 'FAIL'}  C9 DECISION.md is complete and its verdict follows from its numbers")
+if done9.returncode != 0:
+    failed += 1
+    print("      " + (done9.stdout + done9.stderr).strip().replace("\n", "\n      ")[:1500])
+
 print(f"\n{'All checks pass.' if failed == 0 else str(failed) + ' check(s) failed.'}")
 sys.exit(1 if failed else 0)

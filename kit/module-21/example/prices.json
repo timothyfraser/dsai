@@ -1,0 +1,70 @@
+{
+  "about": "Host and model prices for cost_estimate. Every price carries the page it was read from and the day it was read. A price that could not be read on the vendor's own page is the text 'see vendor page', never a number. Prices change: read the page again before you rely on one.",
+  "hosts": {
+    "posit_connect_course": {
+      "kind": "shared",
+      "fixed_month_usd": "see vendor page",
+      "note": "The course server is one fixed cost shared by every team; a team gets no bill. Posit's defaults: MinProcesses 0, IdleTimeout 5s, InitTimeout 120s, MaxProcesses 3, MinProcessesLimit 10; max processes cannot be set to zero.",
+      "source_url": "https://docs.posit.co/connect/admin/appendix/configuration/",
+      "accessed": "2026-11-05",
+      "verified": true
+    },
+    "digitalocean_fixed": {
+      "kind": "fixed",
+      "fixed_month_usd": 5,
+      "note": "Shared (Fixed) CPU: one container instance only, 1 vCPU, 512 MiB, autoscaling no. The plan Module 4 uses; it never sleeps.",
+      "quote": "Selecting a fixed CPU will limit you to one container instance only",
+      "source_url": "https://www.digitalocean.com/pricing/app-platform",
+      "accessed": "2026-11-05",
+      "verified": true
+    },
+    "digitalocean_scale_to_zero": {
+      "kind": "private preview",
+      "note": "Private preview as of 2026-11-05: request access through Support; may not be suitable for production; web services only; sleeps after 600 to 86,400 seconds of inactivity; billed at 10 percent of the standard price while at zero; waking typically takes several seconds; cannot be combined with request-based autoscaling. Not used in the estimate.",
+      "source_url": "https://docs.digitalocean.com/products/app-platform/how-to/scale-to-zero/",
+      "accessed": "2026-11-05",
+      "verified": true
+    },
+    "aws_lambda": {
+      "kind": "per_request",
+      "price_per_million_requests_usd": 0.2,
+      "price_per_gb_s_usd": 0.0000166667,
+      "free_requests_month": 1000000,
+      "free_gb_s_month": 400000,
+      "bills_cold_start": true,
+      "note": "x86, on-demand, read from the page's worked examples. The INIT (start-up) phase is billed from 2025-08-01 for ZIP functions on managed runtimes.",
+      "source_url": "https://aws.amazon.com/lambda/pricing/",
+      "accessed": "2026-11-05",
+      "verified": true
+    },
+    "google_cloud_run": {
+      "kind": "per_request",
+      "price_per_million_requests_usd": 0.4,
+      "price_per_gb_s_usd": 0.0000025,
+      "price_per_vcpu_s_usd": 0.000024,
+      "free_requests_month": 2000000,
+      "free_gb_s_month": 360000,
+      "free_vcpu_s_month": 180000,
+      "bills_cold_start": false,
+      "note": "Request-based billing, tier 1, active time; free tier based on us-central1. The page has a second, instance-based table with other rates; those are not used here.",
+      "source_url": "https://cloud.google.com/run/pricing",
+      "accessed": "2026-11-05",
+      "verified": true
+    },
+    "fly_io": {
+      "kind": "per_machine_hour",
+      "price_per_hour_usd": 0.003,
+      "note": "shared-cpu-1x 256MB, billed by the second while a Machine runs ($2.19 per month always on). Stopped Machine rootfs $0.15 per GB; volumes $0.15 per GB per month. Auto stop and start behaviour is not verified. Not used in the estimate.",
+      "source_url": "https://fly.io/pricing/",
+      "accessed": "2026-11-05",
+      "verified": true
+    }
+  },
+  "model": {
+    "price_per_model_call_usd": "see vendor page",
+    "note": "Fill this from your own model provider's page, with its URL and the day you read it. Until you do, cost.json counts the model calls and leaves their cost blank.",
+    "source_url": "https://ollama.com/pricing",
+    "accessed": "2026-11-05",
+    "verified": false
+  }
+}

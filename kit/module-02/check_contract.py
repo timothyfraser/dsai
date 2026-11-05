@@ -80,7 +80,7 @@ check("R6 a docs/ file holds a Mermaid block (a person checks that it renders)",
 ## 1.4 README #################################
 
 readme = read(FOLDER / "README.md")
-runs = re.search(r"(?i)(Rscript|shiny::runApp|runApp|python3?\s+\S+|shiny run)", readme)
+runs = re.search(r"(?i)(Rscript|runApp|python3?\s+\S+|uvicorn\s+\S+|npm run (dev|start)|plumb\()", readme)
 check("R7 README.md names the command that runs the app", bool(runs), "no run command found")
 check("R8 README.md says which API key the app needs",
       bool(re.search(r"(?i)\b(api[_ -]?key|env(ironment)? variable|\.env)\b", readme)),
