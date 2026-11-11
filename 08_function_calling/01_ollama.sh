@@ -7,7 +7,7 @@ source .bashrc
 
 
 # If you haven't yet, let's pull this model:
-MODEL="smollm2:1.7b"  # medium model (1.7 GB)
+MODEL="granite4:3b"  # small model (about 2 GB)
 # Pull model of interest
 # ollama pull $MODEL
 

@@ -1,5 +1,5 @@
 # fixer_csv.py
-# Batched CSV repair — one Ollama round per N rows + ThreadPoolExecutor chunk parallelism
+# Batched CSV repair — one model call per N rows + ThreadPoolExecutor chunk parallelism
 # Tim Fraser
 
 from __future__ import annotations
@@ -16,7 +16,8 @@ import pandas as pd
 from dotenv import load_dotenv
 
 from functions import (
-    ollama_chat_once,
+    llm_chat_once,
+    llm_settings,
     parse_function_arguments,
     split_df_into_row_chunks,
 )
@@ -25,7 +26,7 @@ from functions import (
 
 print()
 print("=================================================================")
-print("📋 fixer_csv.py — batched tool calls + ThreadPoolExecutor (Ollama Cloud)")
+print("📋 fixer_csv.py — batched tool calls + ThreadPoolExecutor (Gemini free tier or local Ollama)")
 print("=================================================================\n")
 
 print("📦 Loading Python packages (pandas, httpx, dotenv) ...")
@@ -49,20 +50,13 @@ if env_path.is_file():
     load_dotenv(env_path)
 else:
     raise SystemExit(
-        "No .env in fixer folder; create one with OLLAMA_API_KEY, OLLAMA_HOST, OLLAMA_MODEL."
+        "No .env in fixer folder; create one with GEMINI_API_KEY, LLM_BASE_URL, LLM_MODEL (copy .env.example)."
     )
 print("   ✅ .env read from fixer folder.\n")
 
-OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "https://ollama.com").strip()
-OLLAMA_API_KEY = os.environ.get("OLLAMA_API_KEY", "").strip()
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "nemotron-3-nano:30b-cloud").strip()
-print(f"☁️  Ollama: host = {OLLAMA_HOST}")
-print(f"   model  = {OLLAMA_MODEL}")
-if OLLAMA_API_KEY:
-    ak_show = f"{OLLAMA_API_KEY[:4]}...{OLLAMA_API_KEY[-1]}"
-else:
-    ak_show = "(empty)"
-print(f"   API key (masked): {ak_show}\n")
+LLM_BASE_URL, LLM_MODEL, LLM_API_KEY = llm_settings()
+print(f"☁️  Model API: base URL = {LLM_BASE_URL}")
+print(f"   model  = {LLM_MODEL}")
 
 
 def read_env_digits(name: str, default: int) -> int:
@@ -253,13 +247,13 @@ def dispatch_fixer_tool(name: str, args: dict[str, Any], api_round: int) -> str:
     return f"Unknown tool: {name}"
 
 
-def call_chunk_ollama(
+def call_chunk_llm(
     chunk_index: int,
     n_chunks: int,
     chunk_csv_text: str,
-    ollama_host: str,
-    ollama_key: str,
-    ollama_model: str,
+    llm_base_url: str,
+    llm_key: str,
+    llm_model: str,
     system_prompt: str,
     data_blurb: str,
     tools: list[dict[str, Any]],
@@ -285,10 +279,10 @@ def call_chunk_ollama(
         {"role": "user", "content": user_msg},
     ]
     try:
-        out = ollama_chat_once(
-            ollama_host,
-            ollama_key,
-            ollama_model,
+        out = llm_chat_once(
+            llm_base_url,
+            llm_key,
+            llm_model,
             messages,
             tools=tools,
             format=None,
@@ -362,20 +356,20 @@ tools = fixer_tool_definitions()
 # 3. PARALLEL CHUNK API CALLS ###################################
 
 print("-----------------------------------------------------------------")
-print(f"🔄 Step 2 — Ollama /api/chat per chunk (workers = {FIXER_CHUNK_WORKERS})")
+print(f"🔄 Step 2 — chat/completions call per chunk (workers = {FIXER_CHUNK_WORKERS})")
 print("-----------------------------------------------------------------\n\n")
 
 chunk_results: list[dict[str, Any]] = []
 
 
 def _run_one(i: int) -> dict[str, Any]:
-    return call_chunk_ollama(
+    return call_chunk_llm(
         chunk_index=i,
         n_chunks=n_chunks,
         chunk_csv_text=chunk_csv_texts[i - 1],
-        ollama_host=OLLAMA_HOST,
-        ollama_key=OLLAMA_API_KEY,
-        ollama_model=OLLAMA_MODEL,
+        llm_base_url=LLM_BASE_URL,
+        llm_key=LLM_API_KEY,
+        llm_model=LLM_MODEL,
         system_prompt=SYSTEM_BATCH,
         data_blurb=DATA_QUALITY_BLURB,
         tools=tools,

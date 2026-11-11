@@ -1,5 +1,5 @@
 #' @name fixer_spatial_context.R
-#' @title Contextual spatial routing — LLM picks sf-backed tools per parcel (batched Ollama)
+#' @title Contextual spatial routing — LLM picks sf-backed tools per parcel (batched LLM)
 #' @author Prof. Tim Fraser
 #' @description
 #' Topic: AI-assisted data management + GIS synthesis
@@ -35,14 +35,14 @@ cat("=================================================================\n\n")
 cat("📦 Loading R packages (dplyr, readr, httr2, jsonlite, stringr, purrr, sf, ggplot2, future, furrr) ...\n")
 library(dplyr) # select, mutate, any_of
 library(readr) # read_csv, write_csv, format_csv
-library(httr2) # optional debugging of HTTP failures when extending ollama_chat_once
+library(httr2) # optional debugging of HTTP failures when extending llm_chat_once
 library(jsonlite) # audit JSONL
 library(stringr) # str_trim, str_extract for FIXER_ROOT
 library(purrr) # map_chr over chunk text
 library(sf) # st_as_sf, distances, buffers (metric CRS)
 library(ggplot2) # choropleth + POI overlay
 library(future) # multisession plan for furrr
-library(furrr) # future_map: one Ollama request per parcel chunk
+library(furrr) # future_map: one LLM request per parcel chunk
 cat("   ✅ Packages ready.\n\n")
 
 ## 0.2 Paths and outputs #################################
@@ -69,22 +69,22 @@ cat("   📄 Parcels: ", PARCELS_PATH, "\n", sep = "")
 cat("   📄 POIs:    ", POIS_PATH, "\n", sep = "")
 cat("   💾 Output:  ", OUT_CSV, "\n\n", sep = "")
 
-## 0.3 Environment and Ollama #################################
+## 0.3 Environment and LLM #################################
 
 env_path = file.path(FIXER_ROOT, ".env")
 cat("🔐 Loading .env ...\n")
 if (file.exists(env_path)) {
   readRenviron(env_path)
 } else {
-  stop("No .env in fixer folder; create one with OLLAMA_API_KEY, OLLAMA_HOST, OLLAMA_MODEL.")
+  stop("No .env in fixer folder; create one with GEMINI_API_KEY, LLM_BASE_URL, LLM_MODEL (see .env.example).")
 }
 cat("   ✅ .env read from fixer folder.\n\n")
 
-OLLAMA_HOST = Sys.getenv("OLLAMA_HOST", unset = "https://ollama.com")
-OLLAMA_API_KEY = Sys.getenv("OLLAMA_API_KEY", unset = "")
-OLLAMA_MODEL = Sys.getenv("OLLAMA_MODEL", unset = "nemotron-3-nano:30b-cloud")
-cat("☁️  Ollama: host = ", OLLAMA_HOST, "\n", sep = "")
-cat("   model  = ", OLLAMA_MODEL, "\n\n", sep = "")
+LLM_BASE_URL = Sys.getenv("LLM_BASE_URL", unset = "https://generativelanguage.googleapis.com/v1beta/openai")
+GEMINI_API_KEY = Sys.getenv("GEMINI_API_KEY", unset = "")
+LLM_MODEL = Sys.getenv("LLM_MODEL", unset = "gemini-flash-lite-latest")
+cat("☁️  LLM: base URL = ", LLM_BASE_URL, "\n", sep = "")
+cat("   model  = ", LLM_MODEL, "\n\n", sep = "")
 
 # Chunk size: rows per single chat request (24 parcels → 3 API rounds when ROWS_PER_BATCH=10).
 read_env_digits = function(nm, default) {
@@ -98,7 +98,7 @@ read_env_digits = function(nm, default) {
   as.integer(default)
 }
 ROWS_PER_BATCH = read_env_digits("ROWS_PER_BATCH", 10L)
-# Parallel Ollama requests only — tool execution stays sequential on the main process.
+# Parallel LLM requests only — tool execution stays sequential on the main process.
 FIXER_CHUNK_WORKERS = read_env_digits("FIXER_CHUNK_WORKERS", 1L)
 cat("📊 ROWS_PER_BATCH = ", ROWS_PER_BATCH, " (env ROWS_PER_BATCH)\n", sep = "")
 cat("📊 FIXER_CHUNK_WORKERS = ", FIXER_CHUNK_WORKERS, " (env FIXER_CHUNK_WORKERS)\n\n", sep = "")
@@ -449,7 +449,7 @@ run_record_context_note = function(args, api_round) {
 }
 
 #' @name context_tool_definitions
-#' @title Ollama tool schemas for nearest / count / note
+#' @title Tool schemas for nearest / count / note
 context_tool_definitions = function() {
   list(
     list(
@@ -530,14 +530,14 @@ dispatch_context_tool = function(name, args, api_round) {
   paste0("Unknown tool: ", name)
 }
 
-call_context_chunk_ollama = function(
+call_context_chunk_llm = function(
   chunk_index,
   n_chunks,
   chunk_csv_text,
   fixer_root,
-  ollama_host,
-  ollama_key,
-  ollama_model,
+  llm_base_url,
+  llm_key,
+  llm_model,
   system_prompt,
   data_blurb,
   tools,
@@ -561,13 +561,13 @@ call_context_chunk_ollama = function(
     list(role = "user", content = user_msg)
   )
   out = tryCatch(
-    ollama_chat_once(
-      ollama_host,
-      ollama_key,
-      ollama_model,
+    llm_chat_once(
+      llm_base_url,
+      llm_key,
+      llm_model,
       messages,
       tools = tools,
-      format = NULL,
+      json = FALSE,
       max_output_tokens = max_output_tokens
     ),
     error = function(e) {
@@ -609,7 +609,7 @@ ctx_tools = context_tool_definitions()
 # 4. PARALLEL CHUNK API CALLS ###################################
 
 cat("-----------------------------------------------------------------\n")
-cat("🔄 Step 2 — Ollama /api/chat per chunk (furrr)\n")
+cat("🔄 Step 2 — chat request per chunk (furrr)\n")
 cat("-----------------------------------------------------------------\n\n")
 
 future::plan(future::multisession, workers = FIXER_CHUNK_WORKERS)
@@ -617,14 +617,14 @@ future::plan(future::multisession, workers = FIXER_CHUNK_WORKERS)
 chunk_results = furrr::future_map(
   seq_len(n_chunks),
   function(i) {
-    call_context_chunk_ollama(
+    call_context_chunk_llm(
       chunk_index = i,
       n_chunks = n_chunks,
       chunk_csv_text = chunk_csv_texts[[i]],
       fixer_root = FIXER_ROOT,
-      ollama_host = OLLAMA_HOST,
-      ollama_key = OLLAMA_API_KEY,
-      ollama_model = OLLAMA_MODEL,
+      llm_base_url = LLM_BASE_URL,
+      llm_key = GEMINI_API_KEY,
+      llm_model = LLM_MODEL,
       system_prompt = SYSTEM_CONTEXT,
       data_blurb = ROUTING_BLURB,
       tools = ctx_tools,

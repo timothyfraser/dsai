@@ -42,9 +42,10 @@ script_dir = function() {
 }
 SCHEMA_PATH = Sys.getenv("RECORD_SCHEMA", file.path(script_dir(), "record_schema.json"))
 
-# Local by default (llava through Ollama). Set VLM_CLOUD=1 to use Ollama Cloud.
+# Local by default (ministral-3:3b through Ollama). Set VLM_CLOUD=1 to use Google's free Gemini tier.
+# The free tier may use your prompts to improve Google's products, so send only public or made-up data.
 USE_CLOUD = Sys.getenv("VLM_CLOUD") == "1"
-MODEL = Sys.getenv("VLM_MODEL", if (USE_CLOUD) "gemma3:4b" else "llava")
+MODEL = Sys.getenv("VLM_MODEL", if (USE_CLOUD) "gemini-flash-lite-latest" else "ministral-3:3b")
 STUB = Sys.getenv("VLM_STUB")
 
 if (!file.exists(IMAGE_PATH)) { stop(paste0("Image not found: ", IMAGE_PATH)) }
@@ -106,6 +107,30 @@ query = function(IMAGE_PATH, PROMPT, MODEL){
                   '"confidence": "high", "notes": "unknown"}'))
   }
 
+  if (USE_CLOUD) {
+    if (file.exists(".env")) { readRenviron(".env") }
+    GEMINI_API_KEY = Sys.getenv("GEMINI_API_KEY")
+    if (GEMINI_API_KEY == "") { stop("GEMINI_API_KEY not found. Put it in .env for the cloud.") }
+    body = list(
+      model = MODEL,
+      messages = list(
+        list(role = "user", content = list(
+          list(type = "text", text = PROMPT),
+          list(type = "image_url", image_url = list(url = paste0("data:image/jpeg;base64,", image_base64)))
+        ))
+      )
+    )
+    # Retry a busy server up to three times, waiting 2, 4, then 8 seconds.
+    res = request("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions") |>
+      req_headers("Authorization" = paste0("Bearer ", GEMINI_API_KEY)) |>
+      req_body_json(body, auto_unbox = TRUE) |>
+      req_timeout(600) |>
+      req_retry(max_tries = 3, backoff = function(i) 2^i,
+                is_transient = function(r) httr2::resp_status(r) %in% c(429, 500, 503)) |>
+      req_perform()
+    return(resp_body_json(res)$choices[[1]]$message$content)
+  }
+
   body = list(
     model = MODEL,
     messages = list(
@@ -114,17 +139,7 @@ query = function(IMAGE_PATH, PROMPT, MODEL){
     stream = FALSE
   )
 
-  if (USE_CLOUD) {
-    if (file.exists(".env")) { readRenviron(".env") }
-    OLLAMA_API_KEY = Sys.getenv("OLLAMA_API_KEY")
-    if (OLLAMA_API_KEY == "") { stop("OLLAMA_API_KEY not found. Put it in .env for the cloud.") }
-    req = request("https://ollama.com/api/chat") |>
-      req_headers("Authorization" = paste0("Bearer ", OLLAMA_API_KEY))
-  } else {
-    req = request("http://127.0.0.1:11434/api/chat")
-  }
-
-  res = req |>
+  res = request("http://127.0.0.1:11434/api/chat") |>
     req_body_json(body, auto_unbox = TRUE) |>
     req_timeout(600) |>
     req_perform()

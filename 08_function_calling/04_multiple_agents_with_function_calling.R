@@ -18,7 +18,7 @@ source("08_function_calling/functions.R")
 # https://open.fda.gov/apis/drug/drugshortages/
 
 # Select model of interest
-MODEL = "smollm2:1.7b"
+MODEL = "granite4:3b"
 
 
 get_shortages = function(category = "Psychiatry", limit = 500){

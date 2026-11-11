@@ -1,12 +1,12 @@
 # R/tools_reticulate.R
-# CrewAI SerperDevTool via reticulate + read_skill for Ollama tool calling
+# CrewAI SerperDevTool via reticulate + read_skill for tool calling (OpenAI function format)
 # Tim Fraser
 #
 # Parity with agentpy/app/tools.py
 
 MAX_TOOL_OUTPUT_CHARS = 4000L
 
-ollama_tool_definitions = function() {
+llm_tool_definitions = function() {
   list(
     list(
       type = "function",

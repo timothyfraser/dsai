@@ -19,7 +19,7 @@ source("functions.R")
 # https://open.fda.gov/apis/drug/drugshortages/
 
 # Select model of interest
-MODEL = "smollm2:135m"
+MODEL = "granite4:3b"
 
 # We will use this function, defined in 06_agents/functions.R
 # get_shortages

@@ -21,8 +21,8 @@ import json      # for working with JSON
 ## 0.2 Configuration #################################
 
 # Select model of interest
-# Note: Function calling requires a model that supports tools (e.g., smollm2:1.7b)
-MODEL = "smollm2:1.7b"
+# Note: Function calling requires a model that supports tools (e.g., granite4:3b)
+MODEL = "granite4:3b"
 
 # Set the port where Ollama is running
 PORT = 11434

@@ -1,5 +1,5 @@
 # 05_embed.R
-# Semantic RAG with Embeddings (sentence-transformers via reticulate + SQLite)
+# Semantic RAG with Embeddings (Ollama embeddings + SQLite)
 # Pairs with 05_embed.py
 # Tim Fraser
 
@@ -17,7 +17,7 @@
 # - need to run a similarity search on the embeddings to find the most relevant chunks
 # - need to generate a response based on the relevant chunks
 
-# Semantic RAG: embed text with sentence-transformers, store in SQLite via
+# Semantic RAG: embed text with Ollama (granite-embedding:30m), store in SQLite via
 # sqlite-vec (vec0), and run KNN search inside the database. Pairs with 05_embed.py.
 # Requires sqlite-vec extension; set VEC_EXTENSION_PATH below.
 
@@ -25,32 +25,20 @@
 
 ## 0.1 Load Packages ##########################
 
-# Install R packages and python libraries
-# install.packages(c("DBI", "RSQLite", "dplyr", "reticulate", "httr2", "jsonlite"))
-# reticulate::py_install("sentence-transformers")
-# reticulate::py_install("sqlite-vec")
-# sentence-transformers will take a fair amount of space, fyi
+# Install R packages
+# install.packages(c("DBI", "RSQLite", "dbplyr", "dplyr", "httr2", "jsonlite", "stringr"))
+# For the sqlite-vec extension, in a terminal: pip install sqlite-vec
+# First time only, in a terminal: ollama pull granite-embedding:30m
 
 # Load packages
 library(DBI) # for database functions
 library(RSQLite) # for SQLite db connections
 library(dbplyr) # for dplyr-style database queries
 library(dplyr) # for data wrangling
-library(reticulate) # for loading python libraries in R
 library(httr2)    # for HTTP requests
 library(jsonlite) # for json operations
 library(stringr) # for string operations
 readRenviron(".env") # Read the .env file
-
-# Check Python configuration
-py_config()
-# Install Python packages
-py_require("sentence-transformers")
-py_require("sqlite-vec")
-# Check Python packages
-py_list()
-
-st = import("sentence_transformers")
 
 ## 0.2 Configuration ##########################
 
@@ -62,53 +50,46 @@ VEC_EXTENSION_PATH = "C:/Users/tmf77/AppData/Local/Programs/Python/Python312/Lib
 DB_PATH = "07_rag/data/embed.db" # path to your new vector embeddings database
 if(file.exists(DB_PATH)) { unlink(DB_PATH, force = TRUE) }
 DOCUMENT = "07_rag/data/lower_manhattan_recovery_plan.txt" # path to text doc
-EMBED_MODEL = "all-MiniLM-L6-v2" # model for embedding text into vectors
-VEC_DIM = 384L   # all-MiniLM-L6-v2 output size
-MODEL = "gpt-oss:20b-cloud" # cloud model (Ollama Cloud; for RAG answer step)
+EMBED_MODEL = "granite-embedding:30m" # local model for embedding text into vectors
+VEC_DIM = 384L   # granite-embedding:30m output size
+MODEL = "gemini-flash-lite-latest" # cloud model (Google Gemini free tier; for RAG answer step)
+# The free tier may use your prompts to improve Google's products, so send only public or made-up data.
+EMBED_URL = "http://localhost:11434/api/embed" # local Ollama embeddings endpoint
+CLOUD_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
 
 # 1. FUNCTIONS ################################
 
 # We're going to define a few helper functions to help us with the RAG workflow.
 
-# Let's define our own custom agent_run function, using we're using Ollama Cloud.
-# Expects an Ollama Cloud model name
-agent_run = function(role, task, model = "gpt-oss:20b-cloud"){
+# Let's define our own custom agent_run function, using Google Gemini (free tier).
+# Expects a Gemini model name
+agent_run = function(role, task, model = MODEL){
 
   # Get API key from environment variable
-  OLLAMA_API_KEY = Sys.getenv("OLLAMA_API_KEY")
+  GEMINI_API_KEY = Sys.getenv("GEMINI_API_KEY")
 
   # Check if API key is set
-  if (OLLAMA_API_KEY == "") { stop("OLLAMA_API_KEY not found in .env file. Please set it up first.") }
-
-  # Ollama Cloud API endpoint
-  url = "https://ollama.com/api/chat"
+  if (GEMINI_API_KEY == "") { stop("GEMINI_API_KEY not found in .env file. Please set it up first.") }
 
   # Construct the request body as a list
   body = list(
-    model = model,  # Low-cost cloud model
+    model = model,
     messages = list(
       list(role = "system", content = role),
       list(role = "user", content = task)
-    ),
-    stream = FALSE  # Non-streaming response
+    )
   )
 
-  # Build and send the POST request to Ollama Cloud API
-  res = request(url) %>%
-    req_headers(
-      "Authorization" = paste0("Bearer ", OLLAMA_API_KEY),
-      "Content-Type" = "application/json"
-    ) %>%
-    req_body_json(body) %>%   # Attach the JSON body
-    req_method("POST") %>%   # Set HTTP method
+  # Build and send the POST request; on a busy server (429, 500, 503), retry up to 3 tries
+  res = request(CLOUD_URL) %>%
+    req_headers("Authorization" = paste0("Bearer ", GEMINI_API_KEY)) %>%
+    req_body_json(body, auto_unbox = TRUE) %>%   # Attach the JSON body
+    req_retry(max_tries = 3, is_transient = function(r) resp_status(r) %in% c(429, 500, 503)) %>%
     req_perform()             # Execute the request
 
-  # Parse the response JSON
-  response = resp_body_json(res)
-
   # Extract the model's reply
-  # Ollama chat API returns message content directly
-  output = response$message$content
+  response = resp_body_json(res)
+  output = response$choices[[1]]$message$content
   return(output)
 
 }
@@ -116,19 +97,16 @@ agent_run = function(role, task, model = "gpt-oss:20b-cloud"){
 
 # We want to convert a given text sentence into a vector of numbers, called an 'embedding'
 # These embeddings are then stored in a database and can be used to numerically search for the most relevant chunks for a given query.
-# We'll use sentence-transformers to embed the text.
-# Load sentence_transformers once; encode() returns a numpy array, we coerce to R numeric.
+# We'll use Ollama (granite-embedding:30m) to embed the text, on your own computer.
+# The /api/embed endpoint takes a list of texts and returns one vector per text, in order.
 
-# Get the sentence-transformers model
-get_embed_model = function(.model = NULL) {
-  if (is.null(.model)) .model <<- st$SentenceTransformer(EMBED_MODEL)
-  .model
-}
 # Encode the text into a vector of numbers
 embed = function(text) {
-  m = get_embed_model()
-  vec = m$encode(text)
-  as.vector(vec)   # numpy array -> R numeric
+  res = request(EMBED_URL) %>%
+    req_body_json(list(model = EMBED_MODEL, input = list(text)), auto_unbox = TRUE) %>%
+    req_perform()
+  vec = resp_body_json(res)$embeddings[[1]]
+  as.numeric(unlist(vec))   # list -> R numeric
 }
 
 # Float32 blob for sqlite-vec (4 bytes per element).
@@ -206,7 +184,7 @@ n = length(chunks)
 message("Found ", n, " chunks in the document.")
 
 
-# Connect and load sqlite-vec. If path not set, try pip-installed sqlite_vec (reticulate).
+# Connect and load sqlite-vec from VEC_EXTENSION_PATH.
 conn = dbConnect(RSQLite::SQLite(), DB_PATH)
 
 # If you need to start over, disconnect from the database and remove the database file

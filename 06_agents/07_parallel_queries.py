@@ -84,7 +84,7 @@ prompt = (
     '{"sentiment":"<sentiment of the review>"}'
 )
 
-model = "smollm2:1.7b"
+model = "granite4:3b"
 
 # 2. TEST ONE REQUEST ###################################
 

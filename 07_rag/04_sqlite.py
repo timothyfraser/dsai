@@ -38,7 +38,8 @@ from functions import agent_run
 ## 0.3 Configuration #################################
 
 # Select model of interest
-MODEL = "smollm2:1.7b"  # use this small model
+# First time only, in a terminal: ollama pull granite4:3b
+MODEL = "granite4:3b"  # use this small model
 PORT = 11434  # use this default port
 OLLAMA_HOST = f"http://localhost:{PORT}"  # use this default host
 DB_PATH = "data/papers.db"  # path to the SQLite database

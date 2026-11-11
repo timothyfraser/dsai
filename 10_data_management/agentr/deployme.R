@@ -59,3 +59,6 @@ rsconnect::deployAPI(
 #   https://your-connect-server.com/content/<id>/
 #
 # Use GET /health and POST /hooks/agent on that base (see README.md, testme.R).
+
+# Set GEMINI_API_KEY (and optionally LLM_MODEL) as environment variables on the
+# Connect content item (Vars tab). Never put the key in the code or the manifest.

@@ -2,9 +2,9 @@
 
 # README `10_data_management/agentpy`
 
-> A **disaster situational brief agent**: a bounded **FastAPI** + **Ollama** loop for **coordination / resilience** roles—morning-style snapshots of a **user-specified ongoing disaster** and **follow-ups** (neighborhoods, time windows, lifelines). Uses **`AGENT.md`**, **`skills/`**, optional **web search** (Serper), and **plain HTTP JSON**—no Slack or Telegram required. **Not** a substitute for official ICS or field reporting.
+> A **disaster situational brief agent**: a bounded **FastAPI** + model loop for **coordination / resilience** roles—morning-style snapshots of a **user-specified ongoing disaster** and **follow-ups** (neighborhoods, time windows, lifelines). Uses **`AGENT.md`**, **`skills/`**, optional **web search** (Serper), and **plain HTTP JSON**—no Slack or Telegram required. **Not** a substitute for official ICS or field reporting.
 
-**Application package:** [`app/`](app/) — [`app/api.py`](app/api.py) (HTTP app), [`app/loop.py`](app/loop.py) (Ollama **`/api/chat`** + tool loop), [`app/guardrails.py`](app/guardrails.py) (limits + safe paths), [`app/context.py`](app/context.py) (**`AGENT.md`** + skill list), [`app/tools.py`](app/tools.py) (**`read_skill`**, **`web_search`** via [Serper](https://serper.dev)), [`app/logging_setup.py`](app/logging_setup.py) (optional turn trace file).
+**Application package:** [`app/`](app/) — [`app/api.py`](app/api.py) (HTTP app), [`app/loop.py`](app/loop.py) (chat-completions call + tool loop), [`app/guardrails.py`](app/guardrails.py) (limits + safe paths), [`app/context.py`](app/context.py) (**`AGENT.md`** + skill list), [`app/tools.py`](app/tools.py) (**`read_skill`**, **`web_search`** via [Serper](https://serper.dev)), [`app/logging_setup.py`](app/logging_setup.py) (optional turn trace file).
 
 ---
 
@@ -23,7 +23,7 @@
 
 ## Quick start
 
-- Copy [`.env.example`](.env.example) → `.env` and set **`OLLAMA_API_KEY`**. Defaults target **Ollama Cloud** (`OLLAMA_HOST=https://ollama.com`, `OLLAMA_MODEL=nemotron-3-nano:30b-cloud`). Confirm the exact cloud tag in the [Ollama model library](https://ollama.com/library) if your key rejects a name.
+- Copy [`.env.example`](.env.example) → `.env` and set **`GEMINI_API_KEY`** (free key at [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)). Defaults target Google's free Gemini tier through its OpenAI-compatible endpoint (`LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai`, `LLM_MODEL=gemini-flash-lite-latest`). The free tier may use your prompts to improve Google's products, so send only public or made-up data.
 - Optional: set **`SERPER_API_KEY`** for live search (see [Serper](https://serper.dev)). Preflight and the **`web_search`** tool use [CrewAI](https://docs.crewai.com/) **`SerperDevTool`** (`pip` installs **`crewai[tools]`**—heavier than `httpx` alone). Without a key, preflight and the tool return a “search disabled” message; **`AGENT.md`** instructs the model not to invent URLs.
 - `pip install -r` [`requirements.txt`](requirements.txt)
 - From this folder: `python -m uvicorn app.api:app --host 0.0.0.0 --port 8000`, or **`./runme.sh`**.
@@ -55,7 +55,7 @@ sequenceDiagram
   participant Client
   participant FastAPI
   participant Loop
-  participant OllamaCloud
+  participant Model
   participant Tools
   participant Disk
   participant Serper
@@ -63,23 +63,23 @@ sequenceDiagram
   Client->>FastAPI: POST /hooks/agent JSON
   FastAPI->>Loop: run_research_loop
   Loop->>Disk: AGENT.md + skills index
-  Loop->>OllamaCloud: POST /api/chat with tools
-  OllamaCloud-->>Loop: assistant, optional tool_calls
+  Loop->>Model: POST /chat/completions with tools
+  Model-->>Loop: assistant, optional tool_calls
   Loop->>Tools: read_skill / web_search
   Tools->>Disk: skills/*.md
   Tools->>Serper: POST search when SERPER_API_KEY set
-  Loop->>OllamaCloud: follow-up messages until END_BRIEF or turn cap
+  Loop->>Model: follow-up messages until END_BRIEF or turn cap
   FastAPI-->>Client: status, reply, turns_used, turn_cap, min_completion_turns, prefetch_search_used, forced_tool_round, session_id
 ```
 
 - **`app/api.py`** — FastAPI **`app`**: **`GET /health`**, **`POST /hooks/agent`**, **`POST /hooks/control`**. Imports **`run_research_loop`** from **`app/loop.py`**; startup configures optional file logging.
-- **`app/loop.py`** — Bounded Ollama **`/api/chat`** with **[tool calling](https://docs.ollama.com/capabilities/tool-calling)** (**`read_skill`**, **`web_search`**). Each model round counts toward the same cap (**`MAX_AUTONOMOUS_TURNS`**, **10** server-wide; optional lower **`max_turns`** per request) until **`END_BRIEF`** or **`paused_for_human`** + **`resume_token`**. Emits **`agent`** logger lines per turn (tool names, previews, outcomes).
+- **`app/loop.py`** — Bounded **`/chat/completions`** call (OpenAI format) with **tool calling** (**`read_skill`**, **`web_search`**). Each model round counts toward the same cap (**`MAX_AUTONOMOUS_TURNS`**, **10** server-wide; optional lower **`max_turns`** per request) until **`END_BRIEF`** or **`paused_for_human`** + **`resume_token`**. Emits **`agent`** logger lines per turn (tool names, previews, outcomes).
 - **`app/context.py`** — Loads **[`AGENT.md`](AGENT.md)** (fallback string if missing) and appends a list of loadable **`skills/*.md`** names to the system message.
 - **`app/tools.py`** — Implements tools and truncates tool payloads (~**4k** chars). **`web_search`** uses CrewAI **`SerperDevTool`** and **`SERPER_API_KEY`**; **`read_skill`** uses **`guardrails.read_skill_file`**.
 - **`app/guardrails.py`** — **`MAX_AUTONOMOUS_TURNS`** (**10**), **`MAX_WEB_SEARCHES_PER_REQUEST`** (**3**), **`MAX_SKILL_READS_PER_REQUEST`** (**8**), task size, safe **`skills/`** reads. Activity root = parent of **`app/`** (where **`AGENT.md`** lives).
 - **`app/logging_setup.py`** — Optional **`logs/agent.log`** (or path from **`AGENT_LOG_FILE`**); disable with **`AGENT_LOG_FILE=0`** (or **`off`** / empty). **`AGENT_LOG_LEVEL`** defaults to **`INFO`**. Task text may appear in logs—do not log in production with sensitive prompts unless you accept that risk.
 
-For local-only development without a cloud key, point **`OLLAMA_HOST`** at **`http://127.0.0.1:11434`** and use a pulled local model name (optional path—your instructor may require cloud only).
+For local-only development without a cloud key, run `ollama pull granite4:3b`, then set **`LLM_BASE_URL=http://localhost:11434/v1`** and **`LLM_MODEL=granite4:3b`** in `.env`. No key is needed on this path.
 
 ---
 
@@ -98,7 +98,7 @@ For local-only development without a cloud key, point **`OLLAMA_HOST`** at **`ht
 
 - `status`: **`ok`** | **`paused_for_human`** | **`error`**
 - `reply`: assistant text ( **`END_BRIEF`** line stripped on success )
-- `turns_used`: **Ollama `/api/chat`** round-trips in **this** HTTP request (including tool follow-ups); does **not** count the server’s Serper preflight.
+- `turns_used`: chat round-trips in **this** HTTP request (including tool follow-ups); does **not** count the server’s Serper preflight.
 - `turn_cap`: Effective maximum turns allowed for this request (same as **`clamp_turns(max_turns)`**; **`GET /health`** exposes **`max_autonomous_turns`**).
 - `min_completion_turns`: Minimum LLM rounds before **`END_BRIEF`** is honored (default **2** when **`SERPER_API_KEY`** is set, else **1**; override with **`AGENT_MIN_COMPLETION_TURNS`**). Capped by **`turn_cap`** for this request.
 - `prefetch_search_used`: whether an automatic preflight search ran (uses one slot of **`MAX_WEB_SEARCHES_PER_REQUEST`** when enabled).
@@ -118,7 +118,7 @@ For local-only development without a cloud key, point **`OLLAMA_HOST`** at **`ht
 - **Instructions**: edit **[`AGENT.md`](AGENT.md)** for role, output shape, and tool policy—no need to change Python for prose.
 - **Skills**: add **`*.md`** under [`skills/`](skills/) (see [`skills/README.md`](skills/README.md)); the model can load them with **`read_skill`** (basename must match **`^[a-zA-Z0-9_-]+\.md$`**).
 - **Turn trace log**: by default the server appends to **`logs/agent.log`** under this folder (gitignored). Set **`AGENT_LOG_FILE`** to a relative or absolute path to override, or to **`0`** / **`off`** / **`false`** / **`no`** / empty string to disable file logging. **`AGENT_LOG_LEVEL`** (e.g. **`DEBUG`**) adjusts verbosity. **Secrets:** **`OLLAMA_API_KEY`** and **`SERPER_API_KEY`** are never written to this log; previews of task, tool args, tool results, assistant text, and Ollama errors are passed through a small redaction step (e.g. **`Bearer …`**, **`sk-…`**, obvious **`api_key=`** patterns). Do not rely on redaction alone—avoid pasting live keys into **`task`**.
-- **Secrets**: never commit **`.env`**; on **Posit Connect**, set **`OLLAMA_API_KEY`** and optional **`SERPER_API_KEY`** in the server environment.
+- **Secrets**: never commit **`.env`**; on **Posit Connect**, set **`GEMINI_API_KEY`** and optional **`SERPER_API_KEY`** in the server environment.
 
 ---
 
@@ -127,7 +127,7 @@ For local-only development without a cloud key, point **`OLLAMA_HOST`** at **`ht
 | Path | Role |
 |------|------|
 | [`app/api.py`](app/api.py) | FastAPI app (`python -m uvicorn app.api:app`) |
-| [`app/loop.py`](app/loop.py) | Ollama **`/api/chat`** loop + tool rounds + **`agent`** logger |
+| [`app/loop.py`](app/loop.py) | Chat-completions loop + tool rounds + **`agent`** logger |
 | [`app/guardrails.py`](app/guardrails.py) | Turn cap, tool caps, **`skills/`** read policy |
 | [`app/context.py`](app/context.py) | Load **`AGENT.md`**, list skills for system prompt |
 | [`app/tools.py`](app/tools.py) | **`read_skill`**, **`web_search`** (CrewAI **SerperDevTool**) |
@@ -148,7 +148,7 @@ Module activities live in the parent **[`10_data_management/`](../)** folder and
 
 1. [ACTIVITY: Run the Autonomous Agent Locally](../ACTIVITY_agent_local.md) — **Python track:** use the files below; **R track:** see **[`agentr/README.md`](../agentr/README.md)**.
    - [`app/api.py`](app/api.py) — FastAPI entrypoint
-   - [`app/loop.py`](app/loop.py) — bounded situational brief loop (Ollama + tools)
+   - [`app/loop.py`](app/loop.py) — bounded situational brief loop (model + tools)
    - [`app/guardrails.py`](app/guardrails.py) — turn cap and path rules
    - [`requirements.txt`](requirements.txt) — dependencies
    - [`.env.example`](.env.example) — environment template

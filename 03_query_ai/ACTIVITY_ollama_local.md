@@ -14,7 +14,7 @@ Install and run Ollama locally on your machine, then test it using the example s
 
 - [ ] Download and install Ollama from [ollama.com](https://ollama.com/download)
 - [ ] Start the Ollama server by running `ollama serve` in your terminal (or use [`01_ollama.sh`](01_ollama.sh) to start it in the background)
-- [ ] Pull a small model: `ollama pull gemma3:latest` (or use the model specified in the scripts)
+- [ ] Pull a small model: `ollama pull granite4:3b` (or use the model specified in the scripts)
 
 ### 🧱 Stage 2: Test Your Local Ollama
 

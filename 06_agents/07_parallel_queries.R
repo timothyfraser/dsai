@@ -68,7 +68,7 @@ PROMPT = paste0(
     "}"
 )
 
-MODEL = "smollm2:1.7b"
+MODEL = "granite4:3b"
 
 # Do one quick test request
 resp = get_request(CONTENT = "booo", PROMPT = PROMPT, MODEL = MODEL) |>

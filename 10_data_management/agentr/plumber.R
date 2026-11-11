@@ -89,7 +89,7 @@ function() {
   list(
     ok = TRUE,
     run_enabled = .agent_api$run_enabled,
-    model = trimws(Sys.getenv("OLLAMA_MODEL", unset = "nemotron-3-nano:30b-cloud")),
+    model = trimws(Sys.getenv("LLM_MODEL", unset = "gemini-flash-lite-latest")),
     max_autonomous_turns = MAX_AUTONOMOUS_TURNS,
     min_completion_turns = min_completion_turns()
   )
@@ -151,8 +151,12 @@ function(req, res) {
     ))
   }
 
-  ollama_key = trimws(Sys.getenv("OLLAMA_API_KEY", unset = ""))
-  if (!nzchar(ollama_key)) {
+  llm_base_url = trimws(Sys.getenv("LLM_BASE_URL", unset = "https://generativelanguage.googleapis.com/v1beta/openai"))
+  llm_model = trimws(Sys.getenv("LLM_MODEL", unset = "gemini-flash-lite-latest"))
+  # Local path (Ollama): no key needed when the base URL is on this machine.
+  llm_is_local = grepl("^http://(localhost|127[.]0[.]0[.]1)", llm_base_url)
+  llm_key = if (llm_is_local) "" else trimws(Sys.getenv("GEMINI_API_KEY", unset = ""))
+  if (!llm_is_local && !nzchar(llm_key)) {
     res$status = 500
     sid_out = if (is.null(session_id_in)) {
       NULL
@@ -166,12 +170,9 @@ function(req, res) {
       turn_cap = turn_cap,
       min_completion_turns = min(min_completion_turns(), turn_cap),
       session_id = sid_out,
-      detail = "OLLAMA_API_KEY is not set. Add it to .env for Ollama Cloud."
+      detail = "GEMINI_API_KEY is not set. Add it to .env (free key from Google AI Studio)."
     ))
   }
-
-  ollama_host = trimws(Sys.getenv("OLLAMA_HOST", unset = "https://ollama.com"))
-  ollama_model = trimws(Sys.getenv("OLLAMA_MODEL", unset = "nemotron-3-nano:30b-cloud"))
 
   sid = if (is.null(session_id_in) || !nzchar(scalar_chr(session_id_in, ""))) {
     new_session_id()
@@ -193,9 +194,9 @@ function(req, res) {
     }
     result = run_research_loop(
       task,
-      ollama_host = ollama_host,
-      ollama_api_key = ollama_key,
-      model = ollama_model,
+      llm_base_url = llm_base_url,
+      llm_api_key = llm_key,
+      model = llm_model,
       max_turns = if (is.null(max_turns)) {
         NULL
       } else {
@@ -211,9 +212,9 @@ function(req, res) {
     }
     result = run_research_loop(
       task,
-      ollama_host = ollama_host,
-      ollama_api_key = ollama_key,
-      model = ollama_model,
+      llm_base_url = llm_base_url,
+      llm_api_key = llm_key,
+      model = llm_model,
       max_turns = if (is.null(max_turns)) {
         NULL
       } else {
@@ -287,7 +288,7 @@ enhance_openapi_spec = function(spec) {
     "",
     "### Runtime behavior",
     "",
-    "- **Tools:** Ollama-native function calling; **web_search** uses CrewAI **SerperDevTool** (Serper API).",
+    "- **Tools:** OpenAI-style function calling (Gemini free tier by default); **web_search** uses CrewAI **SerperDevTool** (Serper API).",
     "- **Sessions:** omit `session_id` on the first request and the server generates a UUID.",
     "  Reuse that `session_id` only when resuming after `paused_for_human` together with the matching `resume_token`.",
     "  Successful `ok` runs clear server-side session state.",
@@ -296,7 +297,7 @@ enhance_openapi_spec = function(spec) {
     "",
     "- Primary target is **Posit Connect** as a **Plumber** content item.",
     "- Run locally with `Rscript 10_data_management/agentr/runme.R`.",
-    "- Environment variables such as `OLLAMA_API_KEY`, optional `SERPER_API_KEY`, and Connect settings are configured on host.",
+    "- Environment variables such as `GEMINI_API_KEY`, optional `LLM_MODEL`, optional `SERPER_API_KEY`, and Connect settings are configured on host.",
     sep = "\n"
   )
   spec$info$contact = list(name = "Tim Fraser", email = "tmf77@cornell.edu")
@@ -374,7 +375,7 @@ enhance_openapi_spec = function(spec) {
           minimum = 1L,
           maximum = max_autonomous_turns,
           description = paste(
-            "Optional per-request limit on Ollama /api/chat rounds.",
+            "Optional per-request limit on model rounds (chat completions calls).",
             paste0("Must be between 1 and ", max_autonomous_turns, "."),
             sep = " "
           ),
@@ -388,7 +389,7 @@ enhance_openapi_spec = function(spec) {
       properties = list(
         ok = list(type = "boolean", example = TRUE),
         run_enabled = list(type = "boolean", example = TRUE),
-        model = list(type = "string", example = "nemotron-3-nano:30b-cloud"),
+        model = list(type = "string", example = "gemini-flash-lite-latest"),
         max_autonomous_turns = list(type = "integer", example = max_autonomous_turns),
         min_completion_turns = list(type = "integer", example = 1L)
       )
@@ -489,7 +490,7 @@ enhance_openapi_spec = function(spec) {
 
   spec$paths$`/hooks/agent`$post$summary = "Run a situational brief (or resume a paused thread)"
   spec$paths$`/hooks/agent`$post$description = paste(
-    "Runs the bounded Ollama loop for one user `task`.",
+    "Runs the bounded model loop for one user `task`.",
     "",
     "Typical flow:",
     "1. Send `task` only and server assigns `session_id`.",
@@ -539,7 +540,7 @@ enhance_openapi_spec = function(spec) {
       content = list(`application/json` = list(schema = list(`$ref` = "#/components/schemas/DetailOnlyError")))
     ),
     `500` = list(
-      description = "Server-side error (missing OLLAMA_API_KEY or model/tool failure).",
+      description = "Server-side error (missing GEMINI_API_KEY or model/tool failure).",
       content = list(`application/json` = list(schema = list(`$ref` = "#/components/schemas/AgentResponse")))
     ),
     `503` = list(

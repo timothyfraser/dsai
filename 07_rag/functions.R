@@ -14,7 +14,7 @@
 #' @importFrom ollamar chat
 #' @return A list of responses from the agent.
 #' @export 
-agent = function(messages, model = "smollm2:1.7b", output = "text", tools = NULL, all = FALSE){
+agent = function(messages, model = "granite4:3b", output = "text", tools = NULL, all = FALSE){
 
     # # Testing values
     # messages = create_message(role = "user", content = "Add 3 + 5.")
@@ -40,7 +40,7 @@ agent = function(messages, model = "smollm2:1.7b", output = "text", tools = NULL
     #     )
     # )
     # tools = list(tool_add_two_numbers); 
-    # model = "smollm2:1.7b"; 
+    # model = "granite4:3b"; 
     # output = "tools";
 
     # If the agent has NO tools, perform a standard chat

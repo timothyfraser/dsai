@@ -28,9 +28,11 @@ async def _lifespan(_app: FastAPI):
     yield
 
 
-OLLAMA_HOST = os.getenv("OLLAMA_HOST", "https://ollama.com").rstrip("/")
-OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "nemotron-3-nano:30b-cloud")
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai").rstrip("/")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+LLM_MODEL = os.getenv("LLM_MODEL", "gemini-flash-lite-latest")
+# Local path (Ollama): LLM_BASE_URL=http://localhost:11434/v1 and LLM_MODEL=granite4:3b need no key
+LOCAL_LLM = LLM_BASE_URL.startswith(("http://localhost", "http://127.0.0.1"))
 
 _API_DESCRIPTION = """
 Teaching API for a **disaster situational brief agent**: short, structured open-source summaries aimed at
@@ -45,7 +47,7 @@ Teaching API for a **disaster situational brief agent**: short, structured open-
 
 ### Runtime behavior
 
-- **Tools:** Ollama-native function calling; **web_search** uses CrewAI **SerperDevTool** (Serper API).
+- **Tools:** OpenAI-style function calling; **web_search** uses CrewAI **SerperDevTool** (Serper API).
 - **Sessions:** omit `session_id` on the first request—the server **generates** a UUID and returns it.
 Reuse that `session_id` **only** when resuming after `paused_for_human`, together with the `resume_token`
 from that same response. Successful (`ok`) runs clear server-side session state, so the next brief starts fresh
@@ -55,7 +57,7 @@ unless you send a new task in a resume flow.
 
 - Primary target is **Posit Connect** as a **FastAPI** content item. 
 - Deploy with **`app.api:app`** (see the module’s `manifestme.sh` / `deployme.sh` and `rsconnect deploy fastapi` workflow).
-- Environment variables such as `OLLAMA_API_KEY`, optional `SERPER_API_KEY`, and Connect server settings are set on the Connect host.
+- Environment variables such as `GEMINI_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL`, optional `SERPER_API_KEY`, and Connect server settings are set on the Connect host.
 
 """.strip()
 
@@ -188,7 +190,7 @@ class AgentBody(BaseModel):
         ge=1,
         le=MAX_AUTONOMOUS_TURNS,
         description=(
-            "Optional ceiling on **Ollama /api/chat** round-trips for **this** request (including tool follow-ups). "
+            "Optional ceiling on the model's chat endpoint round-trips for **this** request (including tool follow-ups). "
             f"Must be between **1** and **`{MAX_AUTONOMOUS_TURNS}`** (the server-wide maximum). "
             "Omit to use the default (**full** server cap). Values above the cap are rejected by validation (not clamped silently)."
         ),
@@ -202,7 +204,7 @@ ControlBodyDep = Annotated[
         openapi_examples={
             "start_accepting_work": {
                 "summary": "Start — process new agent tasks",
-                "description": "After this, `POST /hooks/agent` can run (subject to Ollama and other checks).",
+                "description": "After this, `POST /hooks/agent` can run (subject to the model key and other checks).",
                 "value": {"action": "start"},
             },
             "stop_new_tasks": {
@@ -251,11 +253,11 @@ AgentBodyDep = Annotated[
 
 @app.get("/health", tags=["health"], summary="Health check")
 async def health() -> dict[str, Any]:
-    """Returns `ok`, whether new agent runs are allowed, Ollama model name, and max autonomous turn cap."""
+    """Returns `ok`, whether new agent runs are allowed, model name, and max autonomous turn cap."""
     return {
         "ok": True,
         "run_enabled": app.state.run_enabled,
-        "model": OLLAMA_MODEL,
+        "model": LLM_MODEL,
         "max_autonomous_turns": MAX_AUTONOMOUS_TURNS,
         "min_completion_turns": min_completion_turns(),
     }
@@ -288,7 +290,7 @@ async def hooks_control(body: ControlBodyDep) -> JSONResponse:
     response_description=(
         "JSON with `status` (`ok` | `paused_for_human` | `error`), `reply`, `turns_used`, `session_id`, "
         "`prefetch_search_used` (whether the server ran its one automatic Serper search before the LLM). "
-        "`turns_used` counts **Ollama /api/chat** round-trips only (tool follow-ups included); it does not count prefetch or the optional server-injected read_skill round. "
+        "`turns_used` counts the model's chat endpoint round-trips only (tool follow-ups included); it does not count prefetch or the optional server-injected read_skill round. "
         "`turn_cap` is the effective ceiling for this request (from optional `max_turns` or the server default). "
         "`min_completion_turns` is the minimum LLM rounds before `END_BRIEF` is accepted (may trigger a verification nudge). "
         "`resume_token` is present only when paused. `detail` explains errors or pause reason."
@@ -296,7 +298,7 @@ async def hooks_control(body: ControlBodyDep) -> JSONResponse:
 )
 async def hooks_agent(body: AgentBodyDep) -> JSONResponse:
     """
-    Runs the bounded Ollama loop for one user **`task`**.
+    Runs the bounded model loop for one user **`task`**.
 
     **Typical flow**
 
@@ -319,7 +321,7 @@ async def hooks_agent(body: AgentBodyDep) -> JSONResponse:
             },
             status_code=503,
         )
-    if not OLLAMA_API_KEY:
+    if not GEMINI_API_KEY and not LOCAL_LLM:
         return JSONResponse(
             {
                 "status": "error",
@@ -328,7 +330,7 @@ async def hooks_agent(body: AgentBodyDep) -> JSONResponse:
                 "turn_cap": turn_cap,
                 "min_completion_turns": min(min_completion_turns(), turn_cap),
                 "session_id": body.session_id,
-                "detail": "OLLAMA_API_KEY is not set. Add it to .env for Ollama Cloud.",
+                "detail": "GEMINI_API_KEY is not set. Add it to .env (free key at https://aistudio.google.com/app/apikey).",
             },
             status_code=500,
         )
@@ -341,9 +343,9 @@ async def hooks_agent(body: AgentBodyDep) -> JSONResponse:
             raise HTTPException(status_code=403, detail="Invalid or missing resume_token for paused session")
         result = run_research_loop(
             body.task,
-            ollama_host=OLLAMA_HOST,
-            ollama_api_key=OLLAMA_API_KEY,
-            model=OLLAMA_MODEL,
+            llm_base_url=LLM_BASE_URL,
+            api_key=GEMINI_API_KEY,
+            model=LLM_MODEL,
             max_turns=body.max_turns,
             existing_messages=state.messages,
             continue_thread=True,
@@ -353,9 +355,9 @@ async def hooks_agent(body: AgentBodyDep) -> JSONResponse:
             raise HTTPException(status_code=404, detail="Unknown session_id for resume_token")
         result = run_research_loop(
             body.task,
-            ollama_host=OLLAMA_HOST,
-            ollama_api_key=OLLAMA_API_KEY,
-            model=OLLAMA_MODEL,
+            llm_base_url=LLM_BASE_URL,
+            api_key=GEMINI_API_KEY,
+            model=LLM_MODEL,
             max_turns=body.max_turns,
             existing_messages=None,
             continue_thread=False,

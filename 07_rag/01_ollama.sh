@@ -6,7 +6,7 @@ source .bashrc
 
 
 # If you haven't yet, let's pull this model:
-MODEL="smollm2:135m"  # small model, no function calling (< 200 MB)
+MODEL="granite4:3b"  # IBM Granite 4 (3B), the course text model
 # Pull model of interest
 # ollama pull $MODEL
 

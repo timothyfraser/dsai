@@ -30,6 +30,7 @@ import csv  # for writing the record as a CSV row
 import json  # for reading the schema and parsing the reply
 import os  # for environment variables and file checks
 import sys  # for command-line arguments and exit codes
+import time  # for waiting between retries
 
 import requests  # for HTTP requests
 
@@ -46,9 +47,10 @@ schema_path = os.environ.get(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), "record_schema.json"),
 )
 
-# Local by default (llava through Ollama). Set VLM_CLOUD=1 to use Ollama Cloud.
+# Local by default (ministral-3:3b through Ollama). Set VLM_CLOUD=1 to use Google's free Gemini tier.
+# The free tier may use your prompts to improve Google's products, so send only public or made-up data.
 use_cloud = os.environ.get("VLM_CLOUD", "") == "1"
-model = os.environ.get("VLM_MODEL", "gemma3:4b" if use_cloud else "llava")
+model = os.environ.get("VLM_MODEL", "gemini-flash-lite-latest" if use_cloud else "ministral-3:3b")
 stub = os.environ.get("VLM_STUB", "")
 
 if not os.path.exists(image_path):
@@ -90,7 +92,7 @@ print("Prompt sent with the photo:\n" + prompt + "\n")
 # Same request as 05_vlms_local.py and 05_vlms_cloud.py:
 # the image goes in as base64 text, next to the prompt.
 def query(image_file_path, user_prompt, model_name):
-    """Send one image + prompt to Ollama (local or cloud) and return text output."""
+    """Send one image + prompt to Ollama (local) or Gemini (cloud) and return text output."""
     with open(image_file_path, "rb") as image_file:
         image_base64 = base64.b64encode(image_file.read()).decode("utf-8")
 
@@ -105,27 +107,40 @@ def query(image_file_path, user_prompt, model_name):
         return ('{"clock_time": "08:40", "n_people": 2, "n_in_queue": 5, "seats_free": 4, '
                 '"confidence": "high", "notes": "unknown"}')
 
+    if use_cloud:
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key and os.path.exists(".env"):
+            from dotenv import load_dotenv  # only needed for the cloud
+            load_dotenv()
+            api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY not found. Put it in .env for the cloud.")
+        url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        body = {
+            "model": model_name,
+            "messages": [{"role": "user", "content": [
+                {"type": "text", "text": user_prompt},
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}},
+            ]}],
+        }
+        # Retry a busy server up to three times, waiting 2, 4, then 8 seconds.
+        for wait in (2, 4, 8, None):
+            response = requests.post(url, headers=headers, json=body, timeout=600)
+            if response.status_code not in (429, 500, 503):
+                break
+            if wait is None:
+                raise RuntimeError(f"The cloud service kept answering with status {response.status_code}. Try again later.")
+            time.sleep(wait)
+        response.raise_for_status()
+        return response.json()["choices"][0]["message"]["content"]
+
     body = {
         "model": model_name,
         "messages": [{"role": "user", "content": user_prompt, "images": [image_base64]}],
         "stream": False,
     }
-
-    if use_cloud:
-        api_key = os.getenv("OLLAMA_API_KEY")
-        if not api_key and os.path.exists(".env"):
-            from dotenv import load_dotenv  # only needed for the cloud
-            load_dotenv()
-            api_key = os.getenv("OLLAMA_API_KEY")
-        if not api_key:
-            raise ValueError("OLLAMA_API_KEY not found. Put it in .env for the cloud.")
-        url = "https://ollama.com/api/chat"
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-    else:
-        url = "http://127.0.0.1:11434/api/chat"
-        headers = {"Content-Type": "application/json"}
-
-    response = requests.post(url, headers=headers, json=body, timeout=600)
+    response = requests.post("http://127.0.0.1:11434/api/chat", json=body, timeout=600)
     response.raise_for_status()
     return response.json()["message"]["content"]
 

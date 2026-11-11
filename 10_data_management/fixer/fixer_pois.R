@@ -1,11 +1,11 @@
 #' @name fixer_pois.R
-#' @title Batched POI name normalization — one Ollama round per N rows + furrr (Ollama tools)
+#' @title Batched POI name normalization — one LLM round per N rows + furrr (tool calls)
 #' @author Prof. Tim Fraser
 #' @description
 #' Topic: AI-assisted data management + GIS
 #'
 #' Points of interest use **x** / **y** (WGS84). Each chunk of **ROWS_PER_BATCH** rows gets one
-#' `/api/chat`; the model returns many **record_poi_category** tool calls.
+#' one `/chat/completions` request; the model returns many **record_poi_category** tool calls.
 #' Raw: **data/pois_messy_raw.csv**; outputs: **output/pois_enriched.csv**,
 #' **output/pois_enrich_audit.jsonl**, map PNGs.
 
@@ -13,7 +13,7 @@
 
 cat("\n")
 cat("=================================================================\n")
-cat("📍 fixer_pois.R — batched POI category tools + points (Ollama Cloud)\n")
+cat("📍 fixer_pois.R — batched POI category tools + points (Gemini free tier or local)\n")
 cat("=================================================================\n\n")
 
 cat("📦 Loading R packages (dplyr, readr, httr2, jsonlite, stringr, purrr, sf, ggplot2, future, furrr) ...\n")
@@ -47,15 +47,15 @@ cat("🔐 Loading .env ...\n")
 if (file.exists(env_path)) {
   readRenviron(env_path)
 } else {
-  stop("No .env in fixer folder; create one with OLLAMA_API_KEY, OLLAMA_HOST, OLLAMA_MODEL.")
+  stop("No .env in fixer folder; create one with GEMINI_API_KEY, LLM_BASE_URL, LLM_MODEL (see .env.example).")
 }
 cat("   ✅ .env read from fixer folder.\n\n")
 
-OLLAMA_HOST = Sys.getenv("OLLAMA_HOST", unset = "https://ollama.com")
-OLLAMA_API_KEY = Sys.getenv("OLLAMA_API_KEY", unset = "")
-OLLAMA_MODEL = Sys.getenv("OLLAMA_MODEL", unset = "nemotron-3-nano:30b-cloud")
-cat("☁️  Ollama: host = ", OLLAMA_HOST, "\n", sep = "")
-cat("   model  = ", OLLAMA_MODEL, "\n\n", sep = "")
+LLM_BASE_URL = Sys.getenv("LLM_BASE_URL", unset = "https://generativelanguage.googleapis.com/v1beta/openai")
+GEMINI_API_KEY = Sys.getenv("GEMINI_API_KEY", unset = "")
+LLM_MODEL = Sys.getenv("LLM_MODEL", unset = "gemini-flash-lite-latest")
+cat("☁️  LLM: base URL = ", LLM_BASE_URL, "\n", sep = "")
+cat("   model  = ", LLM_MODEL, "\n\n", sep = "")
 
 read_env_digits = function(nm, default) {
   s = stringr::str_trim(Sys.getenv(nm, unset = as.character(default)))
@@ -181,14 +181,14 @@ dispatch_poi_tool = function(name, args, api_round) {
   paste0("Unknown tool: ", name)
 }
 
-call_poi_chunk_ollama = function(
+call_poi_chunk_llm = function(
   chunk_index,
   n_chunks,
   chunk_csv_text,
   fixer_root,
-  ollama_host,
-  ollama_key,
-  ollama_model,
+  llm_base_url,
+  llm_key,
+  llm_model,
   system_prompt,
   data_blurb,
   tools,
@@ -211,13 +211,13 @@ call_poi_chunk_ollama = function(
     list(role = "user", content = user_msg)
   )
   out = tryCatch(
-    ollama_chat_once(
-      ollama_host,
-      ollama_key,
-      ollama_model,
+    llm_chat_once(
+      llm_base_url,
+      llm_key,
+      llm_model,
       messages,
       tools = tools,
-      format = NULL,
+      json = FALSE,
       max_output_tokens = max_output_tokens
     ),
     error = function(e) {
@@ -279,7 +279,7 @@ poi_tools = poi_tool_definitions()
 # 3. PARALLEL CHUNK API ###################################
 
 cat("-----------------------------------------------------------------\n")
-cat("🔄 Step 2 — Ollama /api/chat per chunk (furrr)\n")
+cat("🔄 Step 2 — chat request per chunk (furrr)\n")
 cat("-----------------------------------------------------------------\n\n")
 
 future::plan(future::multisession, workers = FIXER_CHUNK_WORKERS)
@@ -287,14 +287,14 @@ future::plan(future::multisession, workers = FIXER_CHUNK_WORKERS)
 chunk_results = furrr::future_map(
   seq_len(n_chunks),
   function(i) {
-    call_poi_chunk_ollama(
+    call_poi_chunk_llm(
       chunk_index = i,
       n_chunks = n_chunks,
       chunk_csv_text = chunk_csv_texts[[i]],
       fixer_root = FIXER_ROOT,
-      ollama_host = OLLAMA_HOST,
-      ollama_key = OLLAMA_API_KEY,
-      ollama_model = OLLAMA_MODEL,
+      llm_base_url = LLM_BASE_URL,
+      llm_key = GEMINI_API_KEY,
+      llm_model = LLM_MODEL,
       system_prompt = SYSTEM_POIS,
       data_blurb = POI_DATA_BLURB,
       tools = poi_tools,

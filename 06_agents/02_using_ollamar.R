@@ -8,7 +8,7 @@ require(dplyr)
 require(stringr)
 
 # Select model of interest
-MODEL = "smollm2:1.7b"
+MODEL = "granite4:3b"
 
 
 # Check if model is currently loaded

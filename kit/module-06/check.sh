@@ -5,7 +5,7 @@
 #
 # Usage, from this folder:
 #   LLM_STUB=1 bash check.sh            # no model: saved proposals, proves the pipeline and checks
-#   bash check.sh                       # your model through Ollama (OLLAMA_HOST, OLLAMA_MODEL)
+#   bash check.sh                       # a live model (GEMINI_API_KEY, or LLM_BASE_URL and LLM_MODEL for local Ollama)
 
 set -euo pipefail
 cd "$(dirname "$0")"

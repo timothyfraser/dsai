@@ -1,5 +1,5 @@
 # 05_embed.py
-# Semantic RAG with Embeddings (sentence-transformers + SQLite)
+# Semantic RAG with Embeddings (Ollama embeddings + SQLite)
 # Pairs with 05_embed.R
 # Tim Fraser
 
@@ -17,7 +17,7 @@
 # - need to run a similarity search on the embeddings to find the most relevant chunks
 # - need to generate a response based on the relevant chunks
 
-# Semantic RAG: embed text with sentence-transformers, store in SQLite via
+# Semantic RAG: embed text with Ollama (granite-embedding:30m), store in SQLite via
 # sqlite-vec (vec0), and run KNN search inside the database. Pairs with 05_embed.R.
 # Requires sqlite-vec extension; Python uses sqlite_vec.load() to load it.
 
@@ -27,8 +27,8 @@
 ## 0.1 Load Packages ##########################
 
 # Install python libraries
-# pip install sentence-transformers sqlite-vec requests
-# sentence-transformers will take a fair amount of space, fyi
+# pip install sqlite-vec requests python-dotenv
+# First time only, in a terminal: ollama pull granite-embedding:30m
 
 # Prefer local 07_rag/functions.py over the PyPI "functions" package (incompatible with Python 3).
 import json
@@ -37,7 +37,7 @@ import runpy     # for executing another Python script
 from dotenv import load_dotenv
 import requests  # for HTTP requests
 import sqlite3
-from sentence_transformers import SentenceTransformer
+import time
 from sqlite_vec import load as sqlite_vec_load, serialize_float32
 
 # 0.2 Working Directory #################################
@@ -71,77 +71,70 @@ DB_PATH = "data/embed.db"  # path to your new vector embeddings database
 if os.path.exists(DB_PATH): os.remove(DB_PATH) 
 else: print("No database found, creating new one.")
 DOCUMENT = "data/lower_manhattan_recovery_plan.txt"  # path to text doc
-EMBED_MODEL = "all-MiniLM-L6-v2"  # model for embedding text into vectors
-VEC_DIM = 384   # all-MiniLM-L6-v2 output size
-MODEL = "gpt-oss:20b-cloud"  # cloud model (Ollama Cloud; for RAG answer step)
+EMBED_MODEL = "granite-embedding:30m"  # local model for embedding text into vectors
+VEC_DIM = 384   # granite-embedding:30m output size
+MODEL = "gemini-flash-lite-latest"  # cloud model (Google Gemini free tier; for RAG answer step)
+# The free tier may use your prompts to improve Google's products, so send only public or made-up data.
+EMBED_URL = "http://localhost:11434/api/embed"  # local Ollama embeddings endpoint
+CLOUD_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
 
 
 # 1. FUNCTIONS ################################
 
 # We're going to define a few helper functions to help us with the RAG workflow.
 
-# Let's define our own custom agent_run function, since we're using Ollama Cloud.
-# Expects an Ollama Cloud model name
-def agent_run(role, task, model="gpt-oss:20b-cloud"):
+# Let's define our own custom agent_run function, since we're using Google Gemini (free tier).
+# Expects a Gemini model name
+def agent_run(role, task, model=MODEL):
     # Get API key from environment variable
-    OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
     # Check if API key is set
-    if not OLLAMA_API_KEY:
-        raise ValueError("OLLAMA_API_KEY not found in .env file. Please set it up first.")
-
-    # Ollama Cloud API endpoint
-    url = "https://ollama.com/api/chat"
+    if not GEMINI_API_KEY:
+        raise ValueError("GEMINI_API_KEY not found in .env file. Please set it up first.")
 
     # Construct the request body
     body = {
-        "model": model,  # Low-cost cloud model
+        "model": model,
         "messages": [
             {"role": "system", "content": role},
             {"role": "user", "content": task}
-        ],
-        "stream": False  # Non-streaming response
+        ]
     }
 
-    # Build and send the POST request to Ollama Cloud API
-    response = requests.post(
-        url,
-        headers={
-            "Authorization": f"Bearer {OLLAMA_API_KEY}",
-            "Content-Type": "application/json"
-        },
-        json=body
-    )
+    # Send the POST request; on a busy server (429, 500, 503), wait 2, 4, then 8 seconds
+    for wait in [2, 4, 8, None]:
+        response = requests.post(
+            CLOUD_URL,
+            headers={
+                "Authorization": f"Bearer {GEMINI_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json=body
+        )
+        if response.status_code not in (429, 500, 503) or wait is None:
+            break
+        time.sleep(wait)
+    if response.status_code in (429, 500, 503):
+        raise RuntimeError(f"Gemini is busy (HTTP {response.status_code}). Try again in a minute.")
     response.raise_for_status()
 
-    # Parse the response JSON
-    data = response.json()
-
     # Extract the model's reply
-    # Ollama chat API returns message content directly
-    output = data["message"]["content"]
+    output = response.json()["choices"][0]["message"]["content"]
     return output
 
 
 # We want to convert a given text sentence into a vector of numbers, called an 'embedding'
 # These embeddings are then stored in a database and can be used to numerically search for the most relevant chunks for a given query.
-# We'll use sentence-transformers to embed the text.
-# Load sentence_transformers once; encode() returns a list of floats.
-
-_embed_model = None
-
-# Get the sentence-transformers model
-def get_embed_model(model_name=None):
-    global _embed_model
-    if _embed_model is None:
-        _embed_model = SentenceTransformer(EMBED_MODEL)
-    return _embed_model
+# We'll use Ollama (granite-embedding:30m) to embed the text, on your own computer.
+# The /api/embed endpoint takes a list of texts and returns one vector per text, in order.
 
 # Encode the text into a vector of numbers
 def embed(text):
-    m = get_embed_model()
-    vec = m.encode(text)
-    return vec.tolist()  # numpy array -> list of floats
+    body = {"model": EMBED_MODEL, "input": [text]}
+    response = requests.post(EMBED_URL, json=body)
+    response.raise_for_status()
+    return response.json()["embeddings"][0]  # list of floats
 
 # Write a function to read in the document into meaningful text chunks.
 def get_text(document_path):
@@ -242,7 +235,6 @@ conn.commit()
 # Construct the embedding database (takes longer for larger text documents)
 n_chunks = conn.execute("SELECT COUNT(*) FROM chunks").fetchone()[0]
 if n_chunks == 0:
-    import time
     start = time.perf_counter()
     build_index_from_document(conn, chunks)
     elapsed = time.perf_counter() - start

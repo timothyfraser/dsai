@@ -1,11 +1,12 @@
 # loop.py
-# Multi-turn disaster situational brief loop against Ollama — tools, guardrails, AGENT.md
+# Multi-turn disaster situational brief loop against the model's chat endpoint — tools, guardrails, AGENT.md
 # Tim Fraser
 
 import json
 import logging
 import os
 import re
+import time
 import uuid
 from typing import Any
 
@@ -22,7 +23,7 @@ from .guardrails import (
 )
 from .logging_setup import configure_agent_logging
 from .tools import (
-    ollama_tool_definitions,
+    tool_definitions,
     parse_function_arguments,
     run_read_skill,
     run_web_search,
@@ -141,7 +142,7 @@ def _inject_forced_read_skill_round(
     Append a synthetic assistant tool_calls + tool turn so the first LLM call always
     follows a real read_skill execution (counts against MAX_SKILL_READS_PER_REQUEST).
 
-    Ollama may ignore tool_choice; this path is reliable. Disable with AGENT_FORCE_FIRST_TOOL=0.
+    Models may ignore tool_choice; this path is reliable. Disable with AGENT_FORCE_FIRST_TOOL=0.
     """
     flag = os.getenv("AGENT_FORCE_FIRST_TOOL", "1").strip().lower()
     if flag in ("0", "false", "no", "off"):
@@ -164,19 +165,13 @@ def _inject_forced_read_skill_round(
                     "type": "function",
                     "function": {
                         "name": "read_skill",
-                        "arguments": {"filename": fn},
+                        "arguments": json.dumps({"filename": fn}),
                     },
                 }
             ],
         }
     )
-    tool_msg: dict[str, Any] = {
-        "role": "tool",
-        "content": result,
-        "name": "read_skill",
-        "tool_name": "read_skill",
-        "tool_call_id": tid,
-    }
+    tool_msg: dict[str, Any] = {"role": "tool", "tool_call_id": tid, "content": result}
     messages.append(tool_msg)
     return True
 
@@ -190,36 +185,33 @@ def _chat_once(
     max_tokens: int | None,
     tools: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    """Single non-streaming /api/chat call (optionally with tools)."""
-    headers = {"Content-Type": "application/json"}
-    if api_key:
-        headers["Authorization"] = f"Bearer {api_key}"
-    body: dict[str, Any] = {
-        "model": model,
-        "messages": messages,
-        "stream": False,
-        "tools": tools,
-    }
+    """Single non-streaming POST {base_url}/chat/completions (OpenAI format, with tools)."""
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {api_key or 'ollama'}"}
+    body: dict[str, Any] = {"model": model, "messages": messages, "tools": tools}
     if max_tokens is not None:
-        body["options"] = {"num_predict": max_tokens}
-    url = base_url.rstrip("/") + "/api/chat"
-    resp = client.post(url, headers=headers, json=body, timeout=120.0)
+        body["max_tokens"] = max_tokens
+    url = base_url.rstrip("/") + "/chat/completions"
+    resp = None
+    for wait in (2, 4, 8, None):  # retry on 429, 500, 503: up to three tries
+        resp = client.post(url, headers=headers, json=body, timeout=120.0)
+        if resp.status_code not in (429, 500, 503) or wait is None:
+            break
+        time.sleep(wait)
+    if resp.status_code in (429, 500, 503):
+        raise RuntimeError(f"Model service returned HTTP {resp.status_code} after 3 retries.")
     resp.raise_for_status()
     data = resp.json()
-    msg = data.get("message") or {}
-    content = (msg.get("content") or "")
-    if isinstance(content, str):
-        content = content.strip()
-    else:
-        content = str(content).strip()
+    msg = ((data.get("choices") or [{}])[0].get("message")) or {}
+    content = msg.get("content") or ""
+    content = content.strip() if isinstance(content, str) else str(content).strip()
     return {"content": content, "message": msg, "raw": data}
 
 
 def run_research_loop(
     task: str,
     *,
-    ollama_host: str,
-    ollama_api_key: str,
+    llm_base_url: str,
+    api_key: str,
     model: str,
     max_turns: int | None = None,
     max_output_tokens: int | None = None,
@@ -229,12 +221,12 @@ def run_research_loop(
     """
     Run the disaster situational brief loop until END_BRIEF, turn budget exhausted, or error.
 
-    Each POST /api/chat counts toward the same turn budget (including tool follow-ups).
+    Each POST to the chat endpoint counts toward the same turn budget (including tool follow-ups).
     `turns_used` is only those LLM calls—not the optional server-side Serper preflight
     (see `prefetch_search_used`) nor the optional forced read_skill injection (see `forced_tool_round`).
     `min_completion_turns` (see guardrails) is the minimum LLM rounds before `END_BRIEF` is accepted; the loop
     may inject a verification user message if the model tries to finish early.
-    Web search uses CrewAI SerperDevTool; Ollama handles function calling for read_skill and web_search.
+    Web search uses CrewAI SerperDevTool; the model handles function calling for read_skill and web_search.
     """
     configure_agent_logging()
     if not task_size_ok(task):
@@ -254,7 +246,7 @@ def run_research_loop(
     fresh_start = existing_messages is None
     system_text = build_system_prompt()
 
-    tools = ollama_tool_definitions()
+    tools = tool_definitions()
     search_left = [MAX_WEB_SEARCHES_PER_REQUEST]
     skill_left = [MAX_SKILL_READS_PER_REQUEST]
 
@@ -302,19 +294,19 @@ def run_research_loop(
     with httpx.Client() as client:
         while turns_used < turns_budget:
             turns_used += 1
-            log.info("turn %s/%s calling Ollama model=%s", turns_used, turns_budget, model)
+            log.info("turn %s/%s calling model=%s", turns_used, turns_budget, model)
             try:
                 out = _chat_once(
                     client,
-                    ollama_host,
-                    ollama_api_key,
+                    llm_base_url,
+                    api_key,
                     model,
                     messages,
                     max_output_tokens,
                     tools,
                 )
             except Exception as exc:  # noqa: BLE001 — surface model/HTTP errors to API layer
-                log.warning("turn %s Ollama error: %s", turns_used, _redact_for_log(exc))
+                log.warning("turn %s model error: %s", turns_used, _redact_for_log(exc))
                 return {
                     "status": "error",
                     "reply": last_content,
@@ -355,15 +347,9 @@ def run_research_loop(
                         len(result),
                         _redact_for_log(_preview(result, 120)),
                     )
-                    tool_message: dict[str, Any] = {"role": "tool", "content": result}
-                    if name:
-                        tool_message["name"] = name
-                    tid = tc.get("id")
-                    if tid:
-                        tool_message["tool_call_id"] = tid
-                    if name:
-                        tool_message["tool_name"] = name
-                    messages.append(tool_message)
+                    messages.append(
+                        {"role": "tool", "tool_call_id": tc.get("id") or "", "content": result}
+                    )
                 continue
 
             last_content = out["content"]

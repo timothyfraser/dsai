@@ -15,12 +15,16 @@ if (file.exists("12_end/.env")) readRenviron("12_end/.env")
 
 ENDPOINT_URL = trimws(Sys.getenv("API_PUBLIC_URL", unset = "http://localhost:8000"))
 ENDPOINT_URL = sub("/$", "", ENDPOINT_URL)
-OLLAMA_HOST = Sys.getenv("OLLAMA_HOST", unset = "https://ollama.com")
-OLLAMA_API_KEY = Sys.getenv("OLLAMA_API_KEY", unset = "")
-OLLAMA_MODEL = Sys.getenv("OLLAMA_MODEL", unset = "smollm2:1.7b")
+# Cloud (free Gemini tier) by default. For local Ollama, set
+# LLM_BASE_URL=http://localhost:11434/v1 and LLM_MODEL=granite4:3b
+LLM_BASE_URL = Sys.getenv("LLM_BASE_URL", unset = "https://generativelanguage.googleapis.com/v1beta/openai")
+LLM_MODEL = Sys.getenv("LLM_MODEL", unset = "gemini-flash-lite-latest")
+GEMINI_API_KEY = Sys.getenv("GEMINI_API_KEY", unset = "")
 
-if (!nzchar(trimws(OLLAMA_API_KEY))) {
-  stop("Set OLLAMA_API_KEY in your environment or .env file before running this script.")
+# The free tier may use your prompts to improve Google's products, so send only public or made-up data.
+is_local = grepl("^http://(localhost|127[.]0[.]0[.]1)", LLM_BASE_URL)
+if (!is_local && !nzchar(trimws(GEMINI_API_KEY))) {
+  stop("Set GEMINI_API_KEY in your environment or .env file before running this script.")
 }
 
 # 2. DEFINE TOOL FUNCTION ###################################
@@ -51,23 +55,25 @@ predict_vehicle_count = function(day_of_week, hours_of_day) {
   )
 }
 
-# 3. OLLAMA /API/CHAT HELPERS ###################################
+# 3. CHAT COMPLETIONS HELPERS ###################################
 
-ollama_chat_once = function(base_url, api_key, model, messages, tools = NULL) {
-  url = paste0(sub("/$", "", base_url), "/api/chat")
-  body = list(model = model, messages = messages, stream = FALSE)
+chat_once = function(base_url, api_key, model, messages, tools = NULL) {
+  url = paste0(sub("/$", "", base_url), "/chat/completions")
+  body = list(model = model, messages = messages)
   if (!is.null(tools) && length(tools) > 0L) body$tools = tools
+  key = if (grepl("^http://(localhost|127[.]0[.]0[.]1)", base_url)) "ollama" else trimws(api_key)
 
   req = httr2::request(url) |>
     httr2::req_headers("Content-Type" = "application/json") |>
-    httr2::req_headers(Authorization = paste("Bearer", trimws(api_key))) |>
+    httr2::req_headers(Authorization = paste("Bearer", key)) |>
     httr2::req_body_json(body) |>
-    httr2::req_timeout(120)
+    httr2::req_timeout(120) |>
+    httr2::req_retry(max_tries = 3, is_transient = function(r) httr2::resp_status(r) %in% c(429, 500, 503))
 
   resp = httr2::req_perform(req)
   data = httr2::resp_body_json(resp, simplifyVector = FALSE, simplifyDataFrame = FALSE)
 
-  msg = if (is.null(data$message)) list() else data$message
+  msg = if (length(data$choices) == 0L) list() else data$choices[[1]]$message
   content = if (is.null(msg$content)) "" else as.character(msg$content)
 
   list(content = trimws(paste(content, collapse = "")), message = msg, raw = data)
@@ -106,7 +112,6 @@ build_tool_message = function(tool_call) {
   if (!is.null(tool_call$id)) tool_message$tool_call_id = tool_call$id
   if (nzchar(fn)) {
     tool_message$name = fn
-    tool_message$tool_name = fn
   }
   tool_message
 }
@@ -137,7 +142,7 @@ tool_predict_vehicle_count = list(
   )
 )
 
-# 5. RUN OLLAMA TOOL-CALLING LOOP ###################################
+# 5. RUN TOOL-CALLING LOOP ###################################
 
 messages = list(
   list(
@@ -153,15 +158,15 @@ messages = list(
 )
 
 tools = list(tool_predict_vehicle_count)
-ollama_result = ollama_chat_once(
-  base_url = OLLAMA_HOST,
-  api_key = OLLAMA_API_KEY,
-  model = OLLAMA_MODEL,
+chat_result = chat_once(
+  base_url = LLM_BASE_URL,
+  api_key = GEMINI_API_KEY,
+  model = LLM_MODEL,
   messages = messages,
   tools = tools
 )
 
-assistant_msg = ollama_result$message
+assistant_msg = chat_result$message
 messages[[length(messages) + 1L]] = list(
   role = "assistant",
   content = if (is.null(assistant_msg$content)) "" else assistant_msg$content,
@@ -174,10 +179,10 @@ if (length(tool_calls) > 0L) {
   messages[[length(messages) + 1L]] = build_tool_message(tool_calls[[1]])
 }
 
-final_result = ollama_chat_once(
-  base_url = OLLAMA_HOST,
-  api_key = OLLAMA_API_KEY,
-  model = OLLAMA_MODEL,
+final_result = chat_once(
+  base_url = LLM_BASE_URL,
+  api_key = GEMINI_API_KEY,
+  model = LLM_MODEL,
   messages = messages,
   tools = tools
 )

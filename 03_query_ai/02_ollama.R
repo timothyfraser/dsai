@@ -1,6 +1,6 @@
 # workflow.R
 
-# A script to query the lightweight LLM gemma-3-1b!
+# A script to query the lightweight local LLM granite4:3b!
 
 # Starting message
 cat("\n🚀 Sending LLM query in R...\n")
@@ -18,7 +18,7 @@ url = paste0("http://localhost:", PORT, "/api/generate")
 
 # Construct the request body as a list
 body <- list(
-  model = "smollm2:1.7b", # Model name
+  model = "granite4:3b", # Model name
   prompt = "Is model working?",        # User prompt
   stream = FALSE       # Non-streaming response
 )
@@ -33,7 +33,7 @@ res <- request(url) %>%
 response <- resp_body_json(res)
 
 # Extract the model's reply as a character string
-output = response$choices[[1]]$message$content
+output = response$response
 
 # Print the model's reply
 cat(output)

@@ -12,6 +12,8 @@ import csv
 import json
 import os
 import sqlite3
+import time
+import urllib.error
 import urllib.request
 from datetime import date
 from pathlib import Path
@@ -28,10 +30,13 @@ DB_PATH = OUT_DIR / "inventory.db"
 AUDIT_PATH = OUT_DIR / "audit.jsonl"
 OUT_DIR.mkdir(exist_ok=True)
 
-# Which model to ask. Ollama runs on your own computer at this address by default.
-OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "smollm2:1.7b")
-OLLAMA_API_KEY = os.environ.get("OLLAMA_API_KEY", "")
+# Which model to ask. The default is Google's free Gemini tier. The free tier may use your prompts
+# to improve Google's products, so send only public or made-up data.
+# To use your own computer instead: LLM_BASE_URL=http://localhost:11434/v1 and LLM_MODEL=granite4:3b
+# (run `ollama pull granite4:3b` first). The local path needs no key.
+LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
+LLM_MODEL = os.environ.get("LLM_MODEL", "gemini-flash-lite-latest")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 LLM_STUB = os.environ.get("LLM_STUB", "") == "1"
 ROWS_PER_BATCH = 10
 
@@ -64,24 +69,34 @@ def ask_model(rows):
         with open(STUB_PATH, encoding="utf-8") as f:
             return [p for p in json.load(f) if p["row_id"] in ids]
     body = {
-        "model": OLLAMA_MODEL,
-        "stream": False,
-        "format": "json",
-        "options": {"temperature": 0},
+        "model": LLM_MODEL,
+        "temperature": 0,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": json.dumps(rows)},
         ],
     }
-    headers = {"Content-Type": "application/json"}
-    if OLLAMA_API_KEY:
-        headers["Authorization"] = f"Bearer {OLLAMA_API_KEY}"
+    local = LLM_BASE_URL.startswith(("http://localhost", "http://127.0.0.1"))
+    if not local and not GEMINI_API_KEY:
+        raise SystemExit("Set GEMINI_API_KEY, or set LLM_BASE_URL to a local Ollama address.")
+    headers = {"Content-Type": "application/json",
+               "Authorization": "Bearer " + ("ollama" if local else GEMINI_API_KEY)}
     req = urllib.request.Request(
-        f"{OLLAMA_HOST}/api/chat", data=json.dumps(body).encode("utf-8"), headers=headers
+        f"{LLM_BASE_URL}/chat/completions", data=json.dumps(body).encode("utf-8"), headers=headers
     )
-    with urllib.request.urlopen(req, timeout=120) as resp:
-        reply = json.loads(resp.read().decode("utf-8"))
-    parsed = json.loads(reply["message"]["content"])
+    # Retry on 429, 500 and 503: wait 2, 4, then 8 seconds, then stop.
+    for wait in (2, 4, 8, None):
+        try:
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                reply = json.loads(resp.read().decode("utf-8"))
+            break
+        except urllib.error.HTTPError as e:
+            if e.code not in (429, 500, 503) or wait is None:
+                raise SystemExit(f"The model call failed with HTTP status {e.code}.")
+            time.sleep(wait)
+    text = reply["choices"][0]["message"]["content"].strip()
+    text = text.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    parsed = json.loads(text)
     return parsed.get("edits", []) if isinstance(parsed, dict) else parsed
 
 proposals = []

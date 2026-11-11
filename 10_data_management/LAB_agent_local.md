@@ -8,7 +8,7 @@
 
 ## 📋 Lab Overview
 
-You will install dependencies, configure **Ollama Cloud**, and call the **disaster situational brief** agent on your machine using plain **HTTP JSON** (no Slack). The same API exists in two implementations—pick **one**:
+You will install dependencies, configure a **model key**, and call the **disaster situational brief** agent on your machine using plain **HTTP JSON** (no Slack). The same API exists in two implementations—pick **one**:
 
 | Track | Folder | Stack |
 |--------|--------|--------|
@@ -26,8 +26,9 @@ Endpoints are the same: **`GET /health`**, **`POST /hooks/agent`**, **`POST /hoo
 - [ ] **Choose Python or R** (one track for this activity).
   - [ ] **Python:** In a virtual environment, from **`agentpy/`**, run **`pip install -r requirements.txt`**.
   - [ ] **R:** Install CRAN packages **`plumber`**, **`jsonlite`**, **`httr2`**, **`reticulate`**; configure a Python environment with **`crewai_tools`** (see **[`agentr/README.md`](agentr/README.md)** — **`requirements.txt`** and **`RETICULATE_PYTHON`**).
-- [ ] Copy **[`agentpy/.env.example`](agentpy/.env.example)** or **[`agentr/.env.example`](agentr/.env.example)** to **`.env`** inside that same folder (**`agentpy/`** or **`agentr/`**) and add your **`OLLAMA_API_KEY`** from [ollama.com](https://ollama.com) (keep **`.env`** gitignored).
-- [ ] Confirm **`OLLAMA_HOST`** and **`OLLAMA_MODEL`** match the course default (**`nemotron-3-nano:30b-cloud`**) unless your instructor says otherwise.
+- [ ] Copy **[`agentpy/.env.example`](agentpy/.env.example)** or **[`agentr/.env.example`](agentr/.env.example)** to **`.env`** inside that same folder (**`agentpy/`** or **`agentr/`**) and add your free **`GEMINI_API_KEY`** from [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) (keep **`.env`** gitignored). The free tier may use your prompts to improve Google's products, so send only public or made-up data.
+- [ ] Confirm **`LLM_BASE_URL`** and **`LLM_MODEL`** match the course defaults (**`https://generativelanguage.googleapis.com/v1beta/openai`** and **`gemini-flash-lite-latest`**) unless your instructor says otherwise. Both the Python and R agents read the same names.
+- [ ] Optional local path, no key needed: run `ollama pull granite4:3b`, then set **`LLM_BASE_URL=http://localhost:11434/v1`** and **`LLM_MODEL=granite4:3b`**.
 - [ ] Register for a **`Serper.dev` API Key**! This agent uses the `SerperDevTool` tool from the **`crewai_tools`** library, which lets it search the internet! Signup for an account at [serper.dev/signup](https://serper.dev/signup), create an API key, and add it to your `.env` file as `SERPER_API_KEY`.
   - <img width="1548" height="990" alt="image" src="https://github.com/user-attachments/assets/fd784ff8-2354-4373-b65d-2c7fa59393dd" />
 

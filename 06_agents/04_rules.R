@@ -16,7 +16,7 @@ library(yaml)
 source("functions.R")
 
 # Select model of interest
-MODEL = "smollm2:135m"
+MODEL = "granite4:3b"
 
 # =============================================================================
 # Load Rules from YAML

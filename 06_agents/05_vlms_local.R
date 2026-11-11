@@ -6,10 +6,10 @@
 #'
 #' What if our AI systems could see, not just read?
 #' This script shows how to send an image to a vision-capable model
-#' (like llava) using ollamar (local).
+#' (like ministral-3:3b) using ollamar (local).
 
 # Read about your a models info in the ollama library:
-# https://ollama.com/library/llava
+# https://ollama.com/library/ministral-3
 
 # **NOTE** ------------------------------------
 # Running vision queries can take a LONG time on a local machine.
@@ -83,15 +83,15 @@ img_small |> image_write(path = IMAGE_PATH_SMALL)
 
 ## 0.3 Environment ###################################
 
-# Load .env (contains OLLAMA_API_KEY for the cloud fallback)
+# Load .env (contains GEMINI_API_KEY for the cloud fallback)
 if (file.exists(".env")){  readRenviron(".env")  } else {  warning(".env file not found. Needed only for the cloud fallback in Section 2.") }
 
 
 ## 1. Configuration #################################
 
-# LLaVA is a multimodal model that can read images AND text
-# Remember, you'll need to pull the model first with `ollama pull llava` in bash
-MODEL = "llava"
+# ministral-3:3b is a small Mistral model that reads images and text
+# Remember, you'll need to pull the model first with `ollama pull ministral-3:3b` in bash
+MODEL = "ministral-3:3b"
 
 # Path to the image we want the VLM to analyze
 IMAGE_PATH_SMALL = "06_agents/05_coffeeshop_small.jpg"
@@ -140,7 +140,7 @@ resp = chat(model = MODEL, messages = messages, output = "text", stream = FALSE)
 # It takes a WHILE! 
 # (about ~2 minutes on my machine).
 
-# For me, llava model said:
+# For me, an earlier small vision model said:
 # In the image, I see a total of nine individuals. 
 # The people are engaged in various activities 
 # such as sitting at tables, standing, or walking around. 

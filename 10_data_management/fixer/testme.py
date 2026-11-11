@@ -1,5 +1,5 @@
 # testme.py
-# Smoke test Ollama Cloud chat from the fixer folder (no tools)
+# Smoke test the model API chat from the fixer folder (no tools)
 # Tim Fraser
 
 from __future__ import annotations
@@ -29,34 +29,27 @@ def resolve_fixer_root() -> Path:
     raise SystemExit("Run from fixer/, dsai repo root, or set FIXER_ROOT.")
 
 
-from functions import ollama_chat_once
+from functions import llm_chat_once, llm_settings
 
 FIXER_ROOT = resolve_fixer_root()
 env_path = FIXER_ROOT / ".env"
 if env_path.is_file():
     load_dotenv(env_path)
 
-OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "https://ollama.com").strip()
-OLLAMA_API_KEY = os.environ.get("OLLAMA_API_KEY", "").strip()
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "").strip()
-if not OLLAMA_MODEL:
-    OLLAMA_MODEL = "gpt-oss:120b"
-
-if not OLLAMA_API_KEY:
-    raise SystemExit("Set OLLAMA_API_KEY in fixer/.env (copy from .env.example).")
+LLM_BASE_URL, LLM_MODEL, LLM_API_KEY = llm_settings()
 
 messages = [
     {"role": "user", "content": "Reply with exactly one word: pong"},
 ]
 
-print(f"Test query: POST {OLLAMA_HOST}/api/chat")
-print(f"Model: {OLLAMA_MODEL}\n")
+print(f"Test query: POST {LLM_BASE_URL}/chat/completions")
+print(f"Model: {LLM_MODEL}\n")
 
 try:
-    out = ollama_chat_once(
-        OLLAMA_HOST,
-        OLLAMA_API_KEY,
-        OLLAMA_MODEL,
+    out = llm_chat_once(
+        LLM_BASE_URL,
+        LLM_API_KEY,
+        LLM_MODEL,
         messages,
         tools=None,
         format=None,

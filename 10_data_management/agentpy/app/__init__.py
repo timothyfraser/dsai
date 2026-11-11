@@ -1,1 +1,1 @@
-# app package — FastAPI surface, Ollama loop, tools, guardrails (disaster situational brief agent)
+# app package — FastAPI surface, model loop, tools, guardrails (disaster situational brief agent)

@@ -17,7 +17,7 @@
 # If you haven't already, install these packages...
 # install.packages(c("httr2", "jsonlite", "reticulate"))
 # reticulate::py_install("faster-whisper")
-# and pull the model in Ollama: ollama pull smollm2:1.7b
+# and pull the model in Ollama: ollama pull granite4:3b
 
 # 0. SETUP ###################################
 
@@ -32,7 +32,7 @@ library(jsonlite) # for JSON handling
 AUDIO_PATH = Sys.getenv("AUDIO_PATH", "06_agents/06_jfk_short.wav")
 WORK_ORDERS_CSV = Sys.getenv("WORK_ORDERS_CSV", "work_orders.csv")
 OLLAMA_URL = Sys.getenv("OLLAMA_URL", "http://localhost:11434/api/chat")
-MODEL = Sys.getenv("MODEL", "smollm2:1.7b")
+MODEL = Sys.getenv("MODEL", "granite4:3b")
 AUDIO_STUB = Sys.getenv("AUDIO_STUB") == "1"
 LLM_STUB = Sys.getenv("LLM_STUB") == "1"
 

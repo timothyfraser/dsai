@@ -36,7 +36,7 @@ This tool demonstrates your ability to integrate advanced AI capabilities (agent
 
 Your enhanced deployed ShinyApp must include all requirements from App V1, plus:
 
-- [ ] **📊 [60 pts] Functional App**: The app must run a meaningful analysis using thoughtful, well-designed AI queries with agentic orchestration and RAG/tool calling. (This means you probably need to use a cloud AI provider for your queries, eg. OpenAI or Ollama Cloud. Contact me if your company expressly forbids that.)
+- [ ] **📊 [60 pts] Functional App**: The app must run a meaningful analysis using thoughtful, well-designed AI queries with agentic orchestration and RAG/tool calling. (This means you probably need to use a cloud AI provider for your queries, eg. OpenAI or the free tier of Google Gemini. Contact me if your company expressly forbids that.)
     - [ ] **[25 pts] Agentic Orchestration**: Multi-agent system with 2-3 agents working together to complete tasks
         - Each agent has a clear role and system prompt
         - Agents coordinate to accomplish workflow goals

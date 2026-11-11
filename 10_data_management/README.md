@@ -2,7 +2,7 @@
 
 # README Module 10 — Data management
 
-> Use AI for data management: standardizing inputs, addresses, database workflows, and security. This module also includes a **bounded autonomous agent over HTTP**—a **disaster situational brief** service you can run and deploy in **Python** (**FastAPI**) or **R** (**Plumber**), backed by **Ollama Cloud** and optional web search.
+> Use AI for data management: standardizing inputs, addresses, database workflows, and security. This module also includes a **bounded autonomous agent over HTTP**—a **disaster situational brief** service you can run and deploy in **Python** (**FastAPI**) or **R** (**Plumber**), backed by Google's free Gemini tier (or a local model) and optional web search.
 
 ---
 
@@ -33,13 +33,13 @@ Two parallel implementations share the same JSON API (**`GET /health`**, **`POST
 
 Deep dives: **[`agentpy/README.md`](agentpy/README.md)** and **[`agentr/README.md`](agentr/README.md)**.
 
-**Typical env vars:** **`OLLAMA_API_KEY`**, **`OLLAMA_HOST`**, **`OLLAMA_MODEL`**, optional **`SERPER_API_KEY`**, optional **`AGENT_PUBLIC_URL`** for **[`agentpy/testme.py`](agentpy/testme.py)** or **[`agentr/testme.R`](agentr/testme.R)** after deploy.
+**Typical env vars:** **`GEMINI_API_KEY`** (free key at [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)), **`LLM_BASE_URL`**, **`LLM_MODEL`**, optional **`SERPER_API_KEY`**, optional **`AGENT_PUBLIC_URL`** for **[`agentpy/testme.py`](agentpy/testme.py)** or **[`agentr/testme.R`](agentr/testme.R)** after deploy.
 
 ---
 
 ## LLM-assisted data repair (R + Python)
 
-Scripts in **[`fixer/`](fixer/)** use **Ollama Cloud** to **repair tabular data** (batched tool calls) and to **enrich small geospatial examples** (batched tool calls + maps). **R** uses **`httr2`**, **sf**, and **ggplot2** (**[`fixer/functions.R`](fixer/functions.R)**). **Python** uses **`httpx`**, **geopandas**, and **matplotlib** (**[`fixer/functions.py`](fixer/functions.py)**). Synthetic inputs under **`fixer/data/`**; run outputs under **`fixer/output/`** (gitignored). Install Python deps with **`pip install -r fixer/requirements.txt`**.
+Scripts in **[`fixer/`](fixer/)** use the free Gemini tier to **repair tabular data** (batched tool calls) and to **enrich small geospatial examples** (batched tool calls + maps). **R** uses **`httr2`**, **sf**, and **ggplot2** (**[`fixer/functions.R`](fixer/functions.R)**). **Python** uses **`httpx`**, **geopandas**, and **matplotlib** (**[`fixer/functions.py`](fixer/functions.py)**). Synthetic inputs under **`fixer/data/`**; run outputs under **`fixer/output/`** (gitignored). Install Python deps with **`pip install -r fixer/requirements.txt`**.
 
 **Activities:**
 
@@ -54,11 +54,11 @@ Course notes: **[`fixer/README.md`](fixer/README.md)**.
 
 | Folder | Description |
 |--------|-------------|
-| **[`agentpy/`](agentpy/)** | **Python / FastAPI** — bounded disaster situational brief agent, Ollama **`/api/chat`**, **`POST /hooks/agent`**, no Slack. |
+| **[`agentpy/`](agentpy/)** | **Python / FastAPI** — bounded disaster situational brief agent, chat-completions call, **`POST /hooks/agent`**, no Slack. |
 | **[`agentr/`](agentr/)** | **R / Plumber** — same HTTP contract; **httr2** + **reticulate** for search tools. |
 | **[`fixer/`](fixer/)** | **R + Python** — **[`fixer_csv.R`](fixer/fixer_csv.R)** / **[`fixer_csv.py`](fixer/fixer_csv.py)** (batched CSV repair), **[`fixer_parcels.R`](fixer/fixer_parcels.R)** / **[`fixer_parcels.py`](fixer/fixer_parcels.py)** (zoning polygons), **[`fixer_pois.R`](fixer/fixer_pois.R)** / **[`fixer_pois.py`](fixer/fixer_pois.py)** (POI points), **[`fixer_spatial_context.R`](fixer/fixer_spatial_context.R)** / **[`fixer_spatial_context.py`](fixer/fixer_spatial_context.py)** (contextual spatial tool routing); **sf**/**ggplot2** or **geopandas**/**matplotlib** maps. |
 
-**Environment variables (Slack tracks):** **`SUPABASE_URL`**, **`SUPABASE_KEY`**, **`OLLAMA_API_KEY`**, **`OLLAMA_MODEL`**, **`SLACK_BOT_TOKEN`**, **`SLACK_SIGNING_SECRET`**, **`SLACK_CHANNEL_ID`**, optional **`HEARTBEAT_SECRET`**. **Semantic memory:** optional **`MEMORY_ENABLED`**, **`MEMORY_TOP_K`**, **`MEMORY_EMBED_MODEL`**; on Posit Connect, optional **`SLACKBOT_PLUMBER_DIR`**.
+**Environment variables (Slack tracks):** **`SUPABASE_URL`**, **`SUPABASE_KEY`**, **`GEMINI_API_KEY`**, **`LLM_MODEL`**, **`SLACK_BOT_TOKEN`**, **`SLACK_SIGNING_SECRET`**, **`SLACK_CHANNEL_ID`**, optional **`HEARTBEAT_SECRET`**. **Semantic memory:** optional **`MEMORY_ENABLED`**, **`MEMORY_TOP_K`**, **`MEMORY_EMBED_MODEL`**; on Posit Connect, optional **`SLACKBOT_PLUMBER_DIR`**.
 
 ---
 
