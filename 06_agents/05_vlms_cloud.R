@@ -149,7 +149,11 @@ query = function(IMAGE_PATH, PROMPT, MODEL, GEMINI_API_KEY){
     req_body_json(body) %>%
     req_method("POST") %>%
     req_retry(max_tries = 3, is_transient = function(r) httr2::resp_status(r) %in% c(429, 500, 503)) %>%
+    req_error(is_error = function(r) FALSE) %>%
     req_perform()
+
+  # Stop with one plain line if the request still failed
+  if (resp_status(res) != 200) { stop("Gemini request failed with HTTP status ", resp_status(res), ".") }
 
   # Parse the JSON response and extract the model's reply
   response = resp_body_json(res)
@@ -190,7 +194,14 @@ resp2 = query(IMAGE_PATH, PROMPT2, MODEL, GEMINI_API_KEY)
 cat(resp2)
 
 # Parse the JSON string into an R list, using fromJSON() from the jsonlite package
-json = fromJSON(resp2)
+# Strip any code fences first; if it still is not JSON, show the raw text
+json = tryCatch(
+  fromJSON(gsub("```(json)?", "", resp2)),
+  error = function(e) { cat("Could not parse JSON response. Raw text:
+", resp2, "
+"); NULL }
+)
+if (is.null(json)) { stop("Could not parse JSON. Try rerunning the query.") }
 # Preview the JSON list
 print(json)
 

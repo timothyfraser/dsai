@@ -51,9 +51,9 @@ headers = {
 }
 
 # Send POST request to the Gemini API
-# If the server is busy (429, 500, 503), wait 2, 4, then 8 seconds and try again
-for wait in [2, 4, 8, None]:
-    response = requests.post(url, headers=headers, json=body)
+# If the server is busy (429, 500, 503), wait 2 then 4 seconds and try again
+for wait in [2, 4, None]:
+    response = requests.post(url, headers=headers, json=body, timeout=60)
     if response.status_code not in (429, 500, 503):
         break
     if wait is None:

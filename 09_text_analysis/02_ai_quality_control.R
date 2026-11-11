@@ -234,7 +234,7 @@ cat("🤖 Querying AI for quality control...\n\n")
 
 ## 2.2 Query AI #################################
 
-ai_response = query_ai_quality_control(quality_prompt, provider = "openai")
+ai_response = query_ai_quality_control(quality_prompt, provider = AI_PROVIDER)
 
 cat("📥 AI Response (raw):\n")
 cat(ai_response)
@@ -303,7 +303,7 @@ reports = read_csv("09_text_analysis/data/prompt_comparison_reports.csv") %>%
    sample_n(10)
 # Uncomment to check all reports
 if (length(reports) > 1) {
-  batch_results = check_multiple_reports(reports$report_text, source_data, ai_provider = "openai")
+  batch_results = check_multiple_reports(reports$report_text, source_data, ai_provider = AI_PROVIDER)
   cat("\n📊 Batch Quality Control Results:\n")
   print(batch_results)
 }

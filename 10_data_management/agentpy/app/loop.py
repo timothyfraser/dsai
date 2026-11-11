@@ -158,11 +158,13 @@ def _inject_forced_read_skill_round(
     messages.append(
         {
             "role": "assistant",
-            "content": "",
+            "content": None,
             "tool_calls": [
                 {
                     "id": tid,
                     "type": "function",
+                    # Gemini needs a signature on calls it did not generate; this placeholder value is the one Google documents for that case.
+                    "extra_content": {"google": {"thought_signature": "skip_thought_signature_validator"}},
                     "function": {
                         "name": "read_skill",
                         "arguments": json.dumps({"filename": fn}),
@@ -199,7 +201,8 @@ def _chat_once(
         time.sleep(wait)
     if resp.status_code in (429, 500, 503):
         raise RuntimeError(f"Model service returned HTTP {resp.status_code} after 3 retries.")
-    resp.raise_for_status()
+    if resp.status_code >= 400:
+        raise RuntimeError(f"HTTP {resp.status_code}: {resp.text[:500]}")
     data = resp.json()
     msg = ((data.get("choices") or [{}])[0].get("message")) or {}
     content = msg.get("content") or ""
@@ -320,14 +323,32 @@ def run_research_loop(
             msg = out.get("message") or {}
             # Shallow copy so later edits to messages do not mutate response object quirks
             assistant_msg = dict(msg)
-            messages.append(assistant_msg)
 
-            tool_calls = assistant_msg.get("tool_calls") or []
+            raw_calls = assistant_msg.get("tool_calls") or []
+            tool_calls = [tc for tc in raw_calls if isinstance(tc, dict)] if isinstance(raw_calls, list) else []
+            if tool_calls:
+                for i, tc in enumerate(tool_calls):
+                    if not tc.get("id"):
+                        tc["id"] = f"call_{turns_used}_{i}"
+                assistant_msg["tool_calls"] = tool_calls
+                messages.append(assistant_msg)
+            elif out["content"]:
+                messages.append({"role": "assistant", "content": out["content"]})
+            else:
+                log.warning("turn %s empty reply from the model", turns_used)
+                return {
+                    "status": "error",
+                    "reply": last_content,
+                    "turns_used": turns_used,
+                    "prefetch_search_used": prefetch_search_used,
+                    "forced_tool_round": forced_tool_round,
+                    "min_completion_turns": min_done,
+                    "detail": "empty reply from the model",
+                }
+
             if tool_calls:
                 log.info("turn %s assistant tool_calls count=%s", turns_used, len(tool_calls))
                 for tc in tool_calls:
-                    if not isinstance(tc, dict):
-                        continue
                     fn = tc.get("function")
                     if not isinstance(fn, dict):
                         fn = {}
@@ -348,7 +369,7 @@ def run_research_loop(
                         _redact_for_log(_preview(result, 120)),
                     )
                     messages.append(
-                        {"role": "tool", "tool_call_id": tc.get("id") or "", "content": result}
+                        {"role": "tool", "tool_call_id": tc["id"], "content": result}
                     )
                 continue
 

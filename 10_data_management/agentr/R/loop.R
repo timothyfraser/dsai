@@ -140,11 +140,13 @@ inject_forced_read_skill_round = function(messages, search_left, skill_left) {
   tid = paste0("forced_read_skill_", random_hex_chunk(1), random_hex_chunk(1))
   messages[[length(messages) + 1L]] = list(
     role = "assistant",
-    content = "",
+    content = NULL,
     tool_calls = list(
       list(
         id = tid,
         type = "function",
+        # Gemini needs a signature on calls it did not generate; this placeholder value is the one Google documents for that case.
+        extra_content = list(google = list(thought_signature = "skip_thought_signature_validator")),
         `function` = list(
           name = "read_skill",
           arguments = as.character(jsonlite::toJSON(list(filename = fn), auto_unbox = TRUE))
@@ -276,11 +278,31 @@ run_research_loop = function(
     }
 
     msg = out$message %||% list()
+    tool_calls = msg$tool_calls %||% NULL
+    has_calls = !is.null(tool_calls) && length(tool_calls) > 0L
+    if (!has_calls && !nzchar(out$content %||% "")) {
+      return(list(
+        status = "error",
+        reply = last_content,
+        turns_used = turns_used,
+        prefetch_search_used = prefetch_search_used,
+        forced_tool_round = forced_tool_round,
+        min_completion_turns = min_done,
+        detail = "empty reply from the model"
+      ))
+    }
+    if (has_calls) {
+      for (i in seq_along(tool_calls)) {
+        if (is.list(tool_calls[[i]]) && !nzchar(as.character(tool_calls[[i]]$id %||% ""))) {
+          tool_calls[[i]]$id = paste0("call_", turns_used, "_", i)
+        }
+      }
+      msg$tool_calls = tool_calls
+    }
     assistant_msg = msg
     messages[[length(messages) + 1L]] = assistant_msg
 
-    tool_calls = msg$tool_calls %||% NULL
-    if (!is.null(tool_calls) && length(tool_calls) > 0L) {
+    if (has_calls) {
       agent_log_info(paste("turn", turns_used, "assistant tool_calls count=", length(tool_calls)))
       for (tc in tool_calls) {
         if (!is.list(tc)) {

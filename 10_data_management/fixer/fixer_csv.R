@@ -51,9 +51,9 @@ cat("🔐 Loading .env ...\n")
 if (file.exists(env_path)) {
   readRenviron(env_path)
 } else {
-  stop("No .env in fixer folder; create one with GEMINI_API_KEY, LLM_BASE_URL, LLM_MODEL (see .env.example).")
+  cat("   (no .env in fixer folder; using environment variables)\n")
 }
-cat("   ✅ .env read from fixer folder.\n\n")
+cat("   ✅ Environment ready.\n\n")
 
 LLM_BASE_URL = Sys.getenv("LLM_BASE_URL", unset = "https://generativelanguage.googleapis.com/v1beta/openai")
 GEMINI_API_KEY = Sys.getenv("GEMINI_API_KEY", unset = "")

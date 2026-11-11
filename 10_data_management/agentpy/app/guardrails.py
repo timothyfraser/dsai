@@ -61,7 +61,7 @@ def clamp_turns(requested: int | None) -> int:
 
 def min_completion_turns() -> int:
     """
-    Minimum LLM /api/chat rounds (each counts toward the turn budget) before END_BRIEF is accepted.
+    Minimum LLM rounds on the model's chat endpoint (each counts toward the turn budget) before END_BRIEF is accepted.
 
     - Set **AGENT_MIN_COMPLETION_TURNS** to a positive integer (capped at **MAX_AUTONOMOUS_TURNS**).
     - If unset: **2** when **SERPER_API_KEY** is set (nudge verification against search), else **1**.

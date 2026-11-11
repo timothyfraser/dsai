@@ -26,7 +26,7 @@ The free tier may use your prompts to improve Google's products, so send only pu
 - [ ] Add your API key in this format:
 
 ```
-GEMINI_API_KEY=<your key>
+GEMINI_API_KEY=your_api_key_here
 ```
 
 - [ ] Save the `.env` file

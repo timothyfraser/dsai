@@ -10,7 +10,7 @@ library(purrr)
 library(lubridate)
 
 # Load functions
-source("functions.R")
+source("06_agents/functions.R")
 
 # In this script, we will build a set of agents
 # to query data, perform analysis, and interpret it.

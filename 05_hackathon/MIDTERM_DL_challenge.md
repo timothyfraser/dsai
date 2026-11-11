@@ -38,7 +38,7 @@ Design, implement, and deploy a multi-part AI-powered system that demonstrates y
 - [ ] Set up your **Supabase database** with appropriate schema and sample data
 - [ ] Build a **REST API** (using Plumber in R or FastAPI/Flask in Python) that queries your database
 - [ ] Create a **dashboard app** (Shiny in R or in Python) that connects to your API
-- [ ] Integrate an **AI model** (OpenAI or Ollama Cloud) that processes data from your database to provide meaningful insights
+- [ ] Integrate an **AI model** (OpenAI or Google's free Gemini tier) that processes data from your database to provide meaningful insights
 
 ### Task 3: Deploy Your System
 

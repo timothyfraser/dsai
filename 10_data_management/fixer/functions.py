@@ -114,7 +114,7 @@ def llm_settings() -> tuple[str, str, str]:
     else:
         key = os.environ.get("GEMINI_API_KEY", "").strip()
         if not key:
-            raise SystemExit("Set GEMINI_API_KEY in fixer/.env (copy from .env.example).")
+            raise SystemExit("Set GEMINI_API_KEY in the environment or in fixer/.env (copy from .env.example).")
     return base, model, key
 
 

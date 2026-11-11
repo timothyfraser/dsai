@@ -132,14 +132,17 @@ def query(image_file_path, user_prompt, model_name, api_key):
 
     # POST to Gemini; if the service is busy (429, 500, 503), retry up to 3 times
     url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
-    for wait in [2, 4, 8]:
+    for wait in [2, 4, None]:
         response = requests.post(url, headers=headers, json=body, timeout=120)
         if response.status_code not in (429, 500, 503):
+            break
+        if wait is None:
             break
         time.sleep(wait)
     if response.status_code in (429, 500, 503):
         raise RuntimeError(f"Gemini is busy or over its free limit (HTTP {response.status_code}). Try again later.")
-    response.raise_for_status()
+    if response.status_code != 200:
+        raise SystemExit(f"Gemini request failed with HTTP status {response.status_code}.")
     result = response.json()
     return result["choices"][0]["message"]["content"]
 

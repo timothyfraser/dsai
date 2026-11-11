@@ -54,7 +54,7 @@ Your deployed ShinyApp must include:
 Your submission should include:
 
 - [ ] **🔗 [25 pts] Deployed App Link**: Working link to your deployed app (GitHub, Posit Cloud Connect, or DigitalOcean). The link **must work** and be accessible.
-- [ ] **📊 [50 pts] Functional App**: The app must run a meaningful analysis of API data using thoughtful, well designed AI queries. (This means you probably need to use a cloud AI provider for your queries, eg. OpenAI or Ollama Cloud. Contact me if your company expressly forbids that.)
+- [ ] **📊 [50 pts] Functional App**: The app must run a meaningful analysis of API data using thoughtful, well designed AI queries. (This means you probably need to use a cloud AI provider for your queries, eg. OpenAI or Google's free Gemini tier. Contact me if your company expressly forbids that.)
 - [ ] **📝 [25 pts] App Description**: Written description of your app (NOT AI-generated)
   - **📝 [10 pts] Description**: What your app does, what API it uses, and what insights it provides. Written in your own words (3-5 paragraphs)
   - **🛠️ [10 pts] Process Diagram**: Visual diagram showing data flow from API → processing → visualization → AI insights (hand-drawn or digital)

@@ -40,10 +40,11 @@ print(f"   💾 Output: {OUT_CSV}\n")
 
 env_path = FIXER_ROOT / ".env"
 print("🔐 Loading .env ...")
-if not env_path.is_file():
-    raise SystemExit("No .env in fixer folder; create one with GEMINI_API_KEY, LLM_BASE_URL, LLM_MODEL (copy .env.example).")
-load_dotenv(env_path)
-print("   ✅ .env read from fixer folder.\n")
+if env_path.is_file():
+    load_dotenv(env_path)
+    print("   ✅ .env read from fixer folder.\n")
+else:
+    print("   (no .env in fixer folder; using environment variables)\n")
 
 LLM_BASE_URL, LLM_MODEL, LLM_API_KEY = llm_settings()
 print(f"☁️  Model API: base URL = {LLM_BASE_URL}")

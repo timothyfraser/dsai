@@ -43,7 +43,7 @@ from sqlite_vec import load as sqlite_vec_load, serialize_float32
 # 0.2 Working Directory #################################
 
 # Get the directory of the current script
-script_dir = os.path.dirname(os.path.abspath(__name__))
+script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
 ## 0.3 Start Ollama Server (source 01_ollama.py) #################################

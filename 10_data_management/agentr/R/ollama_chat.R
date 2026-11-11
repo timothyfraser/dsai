@@ -39,12 +39,12 @@ llm_chat_once = function(
     httr2::req_perform()
 
   data = httr2::resp_body_json(resp, simplifyVector = FALSE, simplifyDataFrame = FALSE)
-  msg = data$choices[[1L]]$message %||% list()
-  # Keep tool_calls as an array on the way back; an empty content must be "" not null.
-  if (is.null(msg$content)) {
-    msg$content = ""
+  if (length(data$choices) == 0L) {
+    return(list(content = "", message = list(), raw = data))
   }
-  content = msg$content
+  msg = data$choices[[1L]]$message %||% list()
+  # Keep NULL content as NULL in the stored message; return the text separately.
+  content = msg$content %||% ""
   if (!is.character(content)) {
     content = as.character(content)
   }

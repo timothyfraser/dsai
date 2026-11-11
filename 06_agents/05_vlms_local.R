@@ -83,8 +83,8 @@ img_small |> image_write(path = IMAGE_PATH_SMALL)
 
 ## 0.3 Environment ###################################
 
-# Load .env (contains GEMINI_API_KEY for the cloud fallback)
-if (file.exists(".env")){  readRenviron(".env")  } else {  warning(".env file not found. Needed only for the cloud fallback in Section 2.") }
+# Load .env if it exists
+if (file.exists(".env")){  readRenviron(".env")  } else {  warning(".env file not found.") }
 
 
 ## 1. Configuration #################################
@@ -100,7 +100,7 @@ IMAGE_PATH_SMALL = "06_agents/05_coffeeshop_small.jpg"
 PROMPT = "Analyze this image and count the number of people in the image."
 
 # Make sure the image actually exists before we send it
-if (!file.exists(IMAGE_PATH)) { stop(paste0("Image not found: ", IMAGE_PATH)) }
+if (!file.exists(IMAGE_PATH_SMALL)) { stop(paste0("Image not found: ", IMAGE_PATH_SMALL)) }
 
 
 # 2. Launch Ollama from inside R (asynchronous)
@@ -130,7 +130,7 @@ messages = list(
   list(
     role = "user",
     content = PROMPT,
-    images = IMAGE_PATH
+    images = IMAGE_PATH_SMALL
   )
 )
 

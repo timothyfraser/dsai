@@ -130,7 +130,7 @@ resp
 
 # Try calling tool #1
 resp = create_message(role = "user", content = "Add 3 + 5.") |>
-    agent(model = model, output = "tools", tools = list(tool_add_two_numbers))
+    agent(model = model, output = "tools", tools = list(tool_add_two_numbers), all = TRUE)
 resp
 
 resp[[1]]$output

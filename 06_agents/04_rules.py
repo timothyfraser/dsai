@@ -36,7 +36,7 @@ MODEL = "granite4:3b"
 # Learn more about standard AI rules formatting here: https://aicodingrules.org/
 
 # Load in rules
-with open("04_rules.yaml", "r") as f:
+with open("06_agents/04_rules.yaml", "r") as f:
     rules = yaml.safe_load(f)
 
 # Extract rules as dictionaries for easy access
