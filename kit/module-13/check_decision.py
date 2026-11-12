@@ -16,6 +16,7 @@
 # 0. SETUP ###################################
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -91,6 +92,50 @@ check("C5 the decision record and the audit log agree", agree,
 
 # C6: the owner wrote down why. A rationale in the owner's words, not left empty.
 check("C6 the decision has a rationale", bool(str(decision.get("rationale", "")).strip()))
+
+# C7-C10 read DESIGN.md, the team's written design choice, from the same folder.
+# Four sections: Rung, Rejected, Reason, Evidence.
+DESIGN = FOLDER / "DESIGN.md"
+design_text = DESIGN.read_text(encoding="utf-8") if DESIGN.exists() else ""
+sections = {}
+current = None
+for line in design_text.splitlines():
+    if line.startswith("## "):
+        current = line[3:].strip().lower()
+        sections[current] = []
+    elif current is not None:
+        sections[current].append(line)
+body = {k: "\n".join(v).strip() for k, v in sections.items()}
+NEEDED = ("rung", "rejected", "reason", "evidence")
+
+# C7: DESIGN.md exists and has the four sections, each with some text.
+missing = [n for n in NEEDED if not body.get(n)]
+check("C7 DESIGN.md has Rung, Rejected, Reason and Evidence sections",
+      DESIGN.exists() and not missing,
+      "DESIGN.md is missing" if not DESIGN.exists() else f"missing or empty sections: {missing}")
+
+# C8: the Rung line is one of the allowed levels and matches model_role in options.json.
+m = re.search(r"^Rung:\s*(\S+)", body.get("rung", ""), re.M | re.I)
+rung = m.group(1).strip().lower().rstrip(".,") if m else ""
+check("C8 the Rung is inform, rank or recommend and matches options.json",
+      rung in MODEL_ROLES and rung == record.get("model_role"),
+      f"Rung '{rung}', model_role '{record.get('model_role')}'")
+
+# C9: Rejected has a bullet that names another rung, a solver or rule-based code, and says why it lost.
+others = [r for r in MODEL_ROLES if r != rung] + ["decide", "solver", "rule-based", "rule based"]
+rejected_ok = False
+for b in body.get("rejected", "").splitlines():
+    t = b.strip().lower()
+    if t.startswith(("-", "*")) and any(w in t for w in others) and "because" in t:
+        rejected_ok = True
+check("C9 Rejected names another rung, a solver or rule-based code, and why it lost",
+      rejected_ok, "need a bullet that names one of them and has the word 'because'")
+
+# C10: Evidence names audit_log.jsonl and a line count that matches the file.
+m = re.search(r"audit_log\.jsonl\D{0,40}?(\d+)\s+lines", body.get("evidence", ""))
+claimed = int(m.group(1)) if m else None
+check("C10 Evidence names audit_log.jsonl and its true line count",
+      claimed == len(log), f"Evidence says {claimed}, the file has {len(log)} lines")
 
 # 3. SUMMARY ###################################
 
