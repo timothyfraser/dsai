@@ -1,0 +1,5 @@
+{"seq": 1, "actor": "human", "action": "ask", "option": null, "note": "Owner asked which station to rebuild first."}
+{"seq": 2, "actor": "model", "action": "suggest", "option": null, "note": "Saved reply: listed options A, B, C with reasons and sources."}
+{"seq": 3, "actor": "model", "action": "rank", "option": "A", "note": "Saved reply: ranked A, then B, then C."}
+{"seq": 4, "actor": "human", "action": "review", "option": "A", "note": "Reviewer opened both sources for A and confirmed them."}
+{"seq": 5, "actor": "human", "action": "decide", "option": "A", "note": "Utility operations manager chose A."}

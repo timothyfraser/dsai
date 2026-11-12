@@ -1,7 +1,8 @@
 // edge.js: run a small language model inside the browser, on the device itself.
 // Course kit, module 10 (Module 20 imports it from here as ../module-10/edge.js).
-// One file, no build step. It picks the fastest engine the device has:
-//   WebGPU (the graphics chip) when the browser offers it, else WASM (the plain CPU).
+// One file, no build step. The model runs on the graphics chip (WebGPU), in Google Chrome.
+// A browser with no graphics path gets one plain line telling the reader to open the page in Chrome, and no model loads.
+// The processor-only (WASM) branch below is kept so you can measure it against the graphics path; no page answers on it.
 // The runtime is Transformers.js, pinned to one exact version so the page never changes under you.
 // With ?stub=1 in the address (or window.EDGE_STUB = true) no model loads at all:
 // a fake model answers instantly, so the check script can run on any machine.
@@ -9,12 +10,53 @@
 export const RUNTIME_URL =
   "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.1/dist/transformers.min.js";
 
-// A 0.5 billion parameter model, 4-bit weights: a few hundred MB, downloaded once, then cached.
-export const MODEL_ID = "onnx-community/Qwen2.5-0.5B-Instruct";
+// Gemma 3 1B (Google), 4-bit weights: about 760 MB, downloaded once, then cached. Smaller models did not keep the JSON reply format.
+export const MODEL_ID = "onnx-community/gemma-3-1b-it-ONNX-GQA";
+
+// An optional lighter model for a laptop short on memory: LFM2 350M from Liquid AI, about 245 MB. Add ?model=light to the address to use it.
+// It breaks the reply format more often than the default, and a company with $10 million or more in revenue needs a licence from Liquid AI to use it.
+export const ALT_MODEL_ID = "onnx-community/LFM2-350M-ONNX";
+
+// The model this page loads: the lighter one only when the address has ?model=light, else the default.
+// A worker has no page address, so the page calls this and passes the answer in its load message.
+export function chosenModel() {
+  return typeof location !== "undefined" && new URLSearchParams(location.search).get("model") === "light" ? ALT_MODEL_ID : MODEL_ID;
+}
+
+// The one line under the status that says which model runs and links to the other route.
+// The link keeps every other address option (such as ?stub=1) and only adds or drops model=light.
+export function showRoute(el) {
+  const light = chosenModel() === ALT_MODEL_ID;
+  const u = new URL(location.href);
+  if (light) u.searchParams.delete("model"); else u.searchParams.set("model", "light");
+  const a = document.createElement("a");
+  a.href = u.href;
+  el.textContent = "";
+  if (light) {
+    a.textContent = "Back to the default model";
+    el.append("Running the lighter model, LFM2 350M (Liquid AI). It breaks the reply format more often than the default, and a company with $10 million or more in revenue needs a licence from Liquid AI to use it. ", a);
+  } else {
+    a.textContent = "Load the lighter model";
+    el.append("Short on memory? ", a, ".");
+  }
+  el.dataset.route = light ? "light" : "default";
+}
 
 export function stubMode() {
   if (typeof window !== "undefined" && window.EDGE_STUB === true) return true;
   return new URLSearchParams(location.search).get("stub") === "1";
+}
+
+// The one line a page shows when the browser has no graphics path.
+export const CHROME_LINE = "This page needs Google Chrome with graphics acceleration on. Open it in Chrome to run the model.";
+
+// Can this page run the model? Ask, never assume. In stub mode no graphics chip is needed
+// (the fake model runs anywhere), so a browser that still has the WebGPU object counts as a yes;
+// a check that removes navigator.gpu gets the Chrome line even in stub mode.
+export async function graphicsPath() {
+  const d = await detectDevice();
+  if (d.device === "webgpu" || (stubMode() && "gpu" in navigator)) return { ok: true, device: d.device === "webgpu" ? "webgpu" : "stub", why: d.why };
+  return { ok: false, device: "none", why: d.why };
 }
 
 // Which engine can this device use? Ask, never assume.
@@ -44,18 +86,19 @@ function stubGenerate(messages) {
 }
 
 // Load the engine once. onStatus(text) reports progress to the page.
-// opts.device ("webgpu" or "wasm") and opts.stub let a caller that already asked pass its answers in:
-// worker.js does, because a check that removes WebGPU from the page cannot reach inside a worker.
+// opts.device ("webgpu" or "wasm"), opts.stub and opts.model let a caller that already asked pass its answers in:
+// worker.js does, because a check that removes WebGPU from the page cannot reach inside a worker,
+// and a worker has no page address to read ?model=light from.
 export async function loadEngine(onStatus = () => {}, opts = {}) {
   if (opts.stub || stubMode()) {
     onStatus("Stub model ready (no download).");
-    return { device: "stub", why: "stub mode", generate: async (msgs) => ({ text: stubGenerate(msgs), tokens: 12 }) };
+    return { device: "stub", why: "stub mode", model: opts.model || chosenModel(), generate: async (msgs) => ({ text: stubGenerate(msgs), tokens: 12 }) };
   }
   const { device, why } = opts.device ? { device: opts.device, why: opts.why || "chosen by the page" } : await detectDevice();
   onStatus("Engine: " + device + " (" + why + "). Loading the runtime...");
   const tf = await import(RUNTIME_URL);
   const dtype = device === "webgpu" ? "q4f16" : "q4";
-  const pipe = await tf.pipeline("text-generation", MODEL_ID, {
+  const pipe = await tf.pipeline("text-generation", opts.model || chosenModel(), {
     device, dtype,
     progress_callback: (p) => { if (p.status === "progress") onStatus("Downloading " + p.file + ": " + Math.round(p.progress) + "%"); },
   });

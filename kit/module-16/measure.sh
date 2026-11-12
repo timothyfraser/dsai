@@ -3,17 +3,17 @@
 # Optional: measure how fast your laptop reads a prompt and writes an answer.
 # Course kit, module 16
 #
-# Only for the optional local step up (Step 7). The default path runs on Gemini.
+# For the local run in Step 7. The default path runs on Gemini.
 # Usage, from this folder, with Ollama running:
-#   bash measure.sh                         # the optional local model
-#   MODEL=granite4:3b bash measure.sh       # any model you have pulled
+#   bash measure.sh                         # the course local model, granite4:3b
+#   MODEL=ministral-3:8b-32k bash measure.sh   # the optional step up, 16 GB laptop
 #
 # Read two numbers from the --verbose block: "prompt eval rate" is how fast the
 # model reads (prefill), and "eval rate" is how fast it writes. Both are tokens/s.
 
 set -euo pipefail
 cd "$(dirname "$0")"
-MODEL="${MODEL:-ministral-3:8b-32k}"  # optional step up for a 16 GB laptop
+MODEL="${MODEL:-granite4:3b}"  # fits an 8 GB laptop
 
 # 0. WHAT IS LOADED, AND WHERE ###################################
 # Load the model first with a one-word reply, so ollama ps has something to show.

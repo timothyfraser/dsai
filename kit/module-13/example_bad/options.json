@@ -1,0 +1,41 @@
+{
+  "question": "Which of three pump stations should the maintenance crew rebuild first?",
+  "stakeholder": "Utility operations manager",
+  "decision_owner": "Utility operations manager",
+  "model_role": "recommend",
+  "options": [
+    {
+      "id": "A",
+      "title": "Rebuild North station first",
+      "reasons": ["Most pump trips in the work-order log", "Serves the hospital feeder main"],
+      "sources": [
+        {"claim": "Most pump trips", "where": "data/work_orders.csv, rows where station = North"},
+        {"claim": "Serves the hospital feeder main", "where": "docs/network_map.pdf, page 2"}
+      ],
+      "model_rank": 1
+    },
+    {
+      "id": "B",
+      "title": "Rebuild River station first",
+      "reasons": ["Oldest motors on the asset register"],
+      "sources": [
+        {"claim": "Oldest motors", "where": "data/asset_register.csv, column install_year"}
+      ],
+      "model_rank": 2
+    },
+    {
+      "id": "C",
+      "title": "Defer all rebuilds and add monitoring",
+      "reasons": ["Lowest cost this budget cycle"],
+      "sources": [
+        {"claim": "Lowest cost", "where": "data/cost_estimates.csv, row C"}
+      ],
+      "model_rank": 3
+    }
+  ],
+  "decision": {
+    "chosen_option": "A",
+    "decided_by": "Utility operations manager",
+    "rationale": "Agree with the ranking: hospital service outweighs motor age. Checked both sources."
+  }
+}

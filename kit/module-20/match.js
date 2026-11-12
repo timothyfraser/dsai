@@ -7,12 +7,12 @@ const STOP = new Set("a an the and or of to in on at is are was be do i you it m
 export const words = (s) => s.toLowerCase().match(/[a-z0-9-]+/g)?.filter((w) => !STOP.has(w) && w.length > 2) ?? [];
 
 // Retrieval by shared words. Small, readable, and it needs no second model.
-// The score is how many of the note's words also appear in the question.
+// The score is how many different words of the note also appear in the question (a word repeated in a note counts once).
 export function bestNote(question, notes) {
   const q = new Set(words(question));
   let best = null, score = 0;
   for (const n of notes) {
-    const s = words(n.title + " " + n.text).filter((w) => q.has(w)).length;
+    const s = [...new Set(words(n.title + " " + n.text))].filter((w) => q.has(w)).length;
     if (s > score) { best = n; score = s; }
   }
   return { note: best, score };

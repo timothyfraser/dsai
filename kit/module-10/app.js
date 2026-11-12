@@ -8,7 +8,7 @@
 
 // 0. SETUP ###################################
 
-import { detectDevice, stubMode } from "./edge.js";
+import { graphicsPath, stubMode, chosenModel, showRoute, CHROME_LINE } from "./edge.js";
 import { builtinModel } from "./builtin.js";
 import { record, summary, saveFile } from "./measure.js";
 import { canListen, listen } from "./voice.js";
@@ -68,6 +68,7 @@ async function askServer(question) {
 let worker = null, nextId = 0;
 const waiting = new Map();
 function shipped(messages) {
+  if (!gpu.ok) return Promise.reject(new Error(CHROME_LINE));   // no graphics path: no model is ever started
   if (!worker) {
     worker = new Worker(new URL("./worker.js", import.meta.url), { type: "module" });
     worker.onmessage = ({ data: m }) => {
@@ -75,7 +76,7 @@ function shipped(messages) {
       if (m.type === "loaded") {
         load = m;
         // In stub mode (?stub=1) a fake model stands in; the engine named is still the one the browser offered.
-        $("engine").textContent = (m.engine === "stub" ? gpu.device + ", fake model" : m.engine) + " (" + gpu.why + ")";
+        $("engine").textContent = (m.engine === "stub" ? "fake model" : m.engine) + " (" + gpu.why + ")";
         document.body.dataset.device = m.engine;
       }
       if (m.type === "reply" || m.type === "error") { waiting.get(m.id)?.(m); waiting.delete(m.id); }
@@ -84,7 +85,7 @@ function shipped(messages) {
   const id = ++nextId;
   return new Promise((resolve, reject) => {
     waiting.set(id, (m) => (m.type === "reply" ? resolve(m) : reject(new Error(m.message))));
-    worker.postMessage({ type: messages ? "generate" : "load", id, messages, device: gpu.device, why: gpu.why, stub: stubMode() });
+    worker.postMessage({ type: messages ? "generate" : "load", id, messages, device: gpu.device, why: gpu.why, stub: stubMode(), model: chosenModel() });
   });
 }
 
@@ -173,8 +174,10 @@ $("mic").addEventListener("click", async () => { $("speech").textContent = await
 
 // Ask, never assume: WebGPU, the built-in model and speech are each checked, and the answer is shown.
 async function main() {
-  gpu = await detectDevice();
-  $("engine").textContent = gpu.device + " (" + gpu.why + "), not loaded yet";
+  showRoute($("route"));
+  gpu =await graphicsPath();
+  $("engine").textContent = gpu.ok ? gpu.device + " (" + gpu.why + "), not loaded yet" : CHROME_LINE;
+  if (!gpu.ok) $("prep").disabled = true;
   builtin = await builtinModel();
   $("builtin").textContent = builtin.why;
   $("speech").textContent = canListen() ? "available" : "not in this browser: type the question";
@@ -186,7 +189,7 @@ async function main() {
   }
   $("ask").disabled = false;
   document.body.dataset.ready = "1";
-  say("Ready. Server: " + API_URL);
+  say(gpu.ok ? "Ready. Server: " + API_URL : CHROME_LINE + " Ready. Server: " + API_URL);
 }
 
 main().catch((err) => { say("Could not start: " + err.message); document.body.dataset.ready = "error"; });

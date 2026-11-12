@@ -17,7 +17,7 @@ self.onmessage = async ({ data: m }) => {
     if (!engine) {
       const t0 = performance.now();
       // The page asked the browser which engine to use; pass its answer in (see edge.js).
-      engine = await loadEngine(status, { device: m.device, why: m.why, stub: m.stub });
+      engine = await loadEngine(status, { device: m.device, why: m.why, stub: m.stub, model: m.model });
       self.postMessage({ type: "loaded", engine: engine.device,
         load_ms: Math.round(performance.now() - t0),
         download_mb: downloadedMB(performance.getEntriesByType("resource")) });
