@@ -8,11 +8,12 @@
 // Usage, from this folder:
 //   EDGE_STUB=1 node check.mjs     fake browser model, no download (what CI runs)
 //   node check.mjs                 the real model (needs the network for the first load)
+//   EDGE_BROWSER=chrome (or msedge) runs your installed browser; a real-model run needs it, because the bundled headless browser has no graphics adapter.
 // The team API is never called: page.route() stands in for it, so the checks can make it
 // answer, fail, go slow, or vanish on purpose. Eight checks:
 //   C1 the page starts and names its engine
 //   C2 the server's answer is shown and labelled as the server's
-//   C3 with WebGPU removed, the page names WASM and still answers
+//   C3 with WebGPU removed, the page says to use Google Chrome and loads no model
 //   C4 with the built-in model present it is used; with it removed the page falls back and says which path
 //   C5 for each state in rules.json (server down, slow, offline) the path that answered matches the rule
 //   C6 with the network off, after one visit, a reload still opens and answers (or says plainly it cannot)
@@ -54,7 +55,9 @@ const server = http.createServer((req, res) => {
   const file = path.join(KIT, p.endsWith("/") ? p + "index.html" : p);
   if (!file.startsWith(KIT) || !fs.existsSync(file)) { res.writeHead(404); return res.end(); }
   served.add(file);
-  res.writeHead(200, { "content-type": TYPES[path.extname(file)] || "application/octet-stream" });
+  // These two headers let the page use the browser's full speed features (shared memory) for the model.
+  res.writeHead(200, { "content-type": TYPES[path.extname(file)] || "application/octet-stream",
+    "cross-origin-opener-policy": "same-origin", "cross-origin-embedder-policy": "credentialless" });
   fs.createReadStream(file).pipe(res);
 });
 await new Promise((r) => server.listen(0, "127.0.0.1", r));
@@ -66,8 +69,9 @@ const check = (n, label, ok, detail) => {
   if (!ok) failed++;
 };
 
-const browser = await chromium.launch();
-const loadMs = STUB ? 15000 : 600000;  // a real first load of the model downloads a few hundred MB
+const browser = await chromium.launch(process.env.EDGE_BROWSER ? { channel: process.env.EDGE_BROWSER } : {});
+const loadMs = STUB ? 15000 : 900000;   // a real first load of the model downloads about 760 MB
+const replyMs = STUB ? 15000 : 240000;  // one real reply, on a slow device
 
 // 2. THE FAKE API, AND ONE FRESH BROWSER PER CASE ###################################
 
@@ -76,6 +80,7 @@ let mode = "ok";
 // init is a script run in the page before its own code: how a check removes a browser feature.
 async function open(init) {
   const context = await browser.newContext();
+  context.setDefaultTimeout(replyMs);
   if (init) await context.addInitScript(init);
   const page = await context.newPage();
   await page.route("**/api/ask", async (route) => {
@@ -86,8 +91,8 @@ async function open(init) {
     return route.fulfill({ status: 200, contentType: "application/json",
       body: JSON.stringify({ answer: "Server answer to: " + q, source: "team-api" }) }).catch(() => {});
   });
-  await page.goto(url);
-  await page.waitForFunction(() => document.body.dataset.ready, null, { timeout: 15000 });
+  await page.goto(url, { timeout: loadMs });
+  await page.waitForFunction(() => document.body.dataset.ready, null, { timeout: loadMs });
   return { context, page };
 }
 
@@ -95,7 +100,7 @@ async function open(init) {
 async function askQ(page, q) {
   await page.fill("#q", q);
   await page.click("#ask");
-  await page.waitForFunction(() => document.querySelector("#out").dataset.kind, null, { timeout: loadMs });
+  await page.waitForFunction(() => document.querySelector("#out").dataset.kind, null, { timeout: replyMs });
   const r = await page.evaluate(() => ({
     kind: document.querySelector("#out").dataset.kind,
     text: document.querySelector("#out").textContent,
@@ -123,7 +128,7 @@ try {
 
   const { context, page } = await open(NO_BUILTIN);
   const engine = await page.textContent("#engine");
-  check(1, "page starts and names its engine", /webgpu|wasm/.test(engine), engine);
+  check(1, "page starts and names its engine", /webgpu|stub/.test(engine), engine);
 
   mode = "ok";
   const a = await askQ(page, "Where is the spare pump?");
@@ -131,11 +136,19 @@ try {
     a.kind === "server" && a.text.includes("Server answer to: Where is the spare pump?") && a.path === "the team server",
     a.path + ", " + a.ms + " ms: " + a.text.slice(0, 60));
 
-  const g = await open(() => { delete Navigator.prototype.gpu; delete self.LanguageModel; });
+  // No graphics path: the page must say to use Google Chrome, and start no model (no worker at all).
+  const g = await open(() => {
+    delete Navigator.prototype.gpu; delete self.LanguageModel;
+    window.__workers = 0; const W = window.Worker;
+    window.Worker = class extends W { constructor(...a) { super(...a); window.__workers++; } };
+  });
   mode = "down";
   const c3 = await askQ(g.page, "Where is the spare pump?");
-  check(3, "no WebGPU: names WASM and still answers",
-    c3.engine.startsWith("wasm") && BROWSER.includes(c3.kind), c3.engine + "; " + c3.path);
+  const workers = await g.page.evaluate(() => window.__workers);
+  const chromeLine = "This page needs Google Chrome with graphics acceleration on. Open it in Chrome to run the model.";
+  check(3, "No WebGPU: the page says to use Google Chrome and loads no model",
+    c3.engine === chromeLine && workers === 0 && c3.kind !== "shipped" && !c3.text.includes("this page's model"),
+    "engine line: " + c3.engine.slice(0, 40) + "...; workers started: " + workers + "; answer: " + c3.path);
   await g.context.close();
 
   const f = await open(FAKE_BUILTIN);
@@ -166,11 +179,11 @@ try {
   await page.waitForFunction(() => document.body.dataset.device, null, { timeout: loadMs });
   await page.waitForFunction(() => navigator.serviceWorker && navigator.serviceWorker.ready.then(() => true), null, { timeout: 10000 });
   await page.reload();  // second load: now the service worker controls the page
-  await page.waitForFunction(() => document.body.dataset.ready, null, { timeout: 15000 });
+  await page.waitForFunction(() => document.body.dataset.ready, null, { timeout: loadMs });
   await page.unroute("**/api/ask");
   await context.setOffline(true);
   await page.reload();
-  await page.waitForFunction(() => document.body.dataset.ready, null, { timeout: 15000 });
+  await page.waitForFunction(() => document.body.dataset.ready, null, { timeout: loadMs });
   const d = await askQ(page, "Where is the spare pump?");
   check(6, "network off after one visit: reload opens and answers or says plainly it cannot",
     BROWSER.includes(d.kind) || d.kind === "none", d.path + ", " + d.ms + " ms");

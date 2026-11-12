@@ -1,7 +1,8 @@
 // edge.js: run a small language model inside the browser, on the device itself.
 // Course kit, module 10 (Module 20 imports it from here as ../module-10/edge.js).
-// One file, no build step. It picks the fastest engine the device has:
-//   WebGPU (the graphics chip) when the browser offers it, else WASM (the plain CPU).
+// One file, no build step. The model runs on the graphics chip (WebGPU), in Google Chrome.
+// A browser with no graphics path gets one plain line telling the reader to open the page in Chrome, and no model loads.
+// The processor-only (WASM) branch below is kept so you can measure it against the graphics path; no page answers on it.
 // The runtime is Transformers.js, pinned to one exact version so the page never changes under you.
 // With ?stub=1 in the address (or window.EDGE_STUB = true) no model loads at all:
 // a fake model answers instantly, so the check script can run on any machine.
@@ -9,12 +10,24 @@
 export const RUNTIME_URL =
   "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.1/dist/transformers.min.js";
 
-// A 0.5 billion parameter model, 4-bit weights: a few hundred MB, downloaded once, then cached.
-export const MODEL_ID = "onnx-community/Qwen2.5-0.5B-Instruct";
+// Gemma 3 1B (Google), 4-bit weights: about 760 MB, downloaded once, then cached. Smaller models did not keep the JSON reply format.
+export const MODEL_ID = "onnx-community/gemma-3-1b-it-ONNX-GQA";
 
 export function stubMode() {
   if (typeof window !== "undefined" && window.EDGE_STUB === true) return true;
   return new URLSearchParams(location.search).get("stub") === "1";
+}
+
+// The one line a page shows when the browser has no graphics path.
+export const CHROME_LINE = "This page needs Google Chrome with graphics acceleration on. Open it in Chrome to run the model.";
+
+// Can this page run the model? Ask, never assume. In stub mode no graphics chip is needed
+// (the fake model runs anywhere), so a browser that still has the WebGPU object counts as a yes;
+// a check that removes navigator.gpu gets the Chrome line even in stub mode.
+export async function graphicsPath() {
+  const d = await detectDevice();
+  if (d.device === "webgpu" || (stubMode() && "gpu" in navigator)) return { ok: true, device: d.device === "webgpu" ? "webgpu" : "stub", why: d.why };
+  return { ok: false, device: "none", why: d.why };
 }
 
 // Which engine can this device use? Ask, never assume.
