@@ -7,4 +7,4 @@
 # Install rsconnect package for Python
 pip install rsconnect-python
 # Write a manifest.json file for the Shiny FastAPI app, directing it to the folder
-rsconnect write-manifest api 04_deployment/positconnect/fastapi
+rsconnect write-manifest api --overwrite 04_deployment/positconnect/fastapi

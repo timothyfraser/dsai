@@ -7,4 +7,4 @@
 # Install rsconnect package for Python
 pip install rsconnect-python
 # Write a manifest.json file for the Shiny Python app, directing it to the folder
-rsconnect write-manifest shiny 04_deployment/positconnectcloud/shinypy
+rsconnect write-manifest shiny --overwrite 04_deployment/positconnectcloud/shinypy

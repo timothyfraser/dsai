@@ -16,7 +16,7 @@
 # LLM_STUB=1 skips Ollama and uses a fixed JSON answer.
 
 # If you haven't already, install these packages...
-# pip install faster-whisper requests
+# pip install faster-whisper "av<19" requests  # av 19 breaks faster-whisper 1.2.1
 # and pull the model in Ollama: ollama pull granite4:3b
 
 # 0. SETUP ###################################

@@ -10,7 +10,7 @@
 # The last section shows the same job done by a cloud API, for comparison.
 
 # If you haven't already, install these packages...
-# pip install faster-whisper requests python-dotenv
+# pip install faster-whisper "av<19" requests python-dotenv  # av 19 breaks faster-whisper 1.2.1
 # The first run downloads the model (about 150 MB for "base.en"). After that it works offline.
 
 # 0. SETUP ###################################

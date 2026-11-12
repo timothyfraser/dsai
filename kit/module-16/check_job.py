@@ -32,7 +32,8 @@ if not HASHES.exists() or not (HERE / "toy").is_dir():
     sys.exit(1)
 
 def sha256(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    # Line endings do not count: git on Windows may check files out with CRLF.
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
 results = []
 def report(ok, name, detail=""):

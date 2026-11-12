@@ -11,7 +11,7 @@
 
 # If you haven't already, install these packages...
 # install.packages(c("reticulate", "httr2", "jsonlite"))
-# reticulate::py_install("faster-whisper")
+# reticulate::py_install(c("faster-whisper", "av<19"))  # av 19 breaks faster-whisper 1.2.1
 # The first run downloads the model (about 150 MB for "base.en"). After that it works offline.
 
 # 0. SETUP ###################################

@@ -1,23 +1,24 @@
 #!/usr/bin/env bash
 # measure.sh
-# Measure how fast your laptop reads a prompt and writes an answer.
+# Optional: measure how fast your laptop reads a prompt and writes an answer.
 # Course kit, module 16
 #
+# Only for the optional local step up (Step 7). The default path runs on Gemini.
 # Usage, from this folder, with Ollama running:
-#   bash measure.sh                         # the default model
-#   MODEL=qwen3:4b bash measure.sh          # any model you have pulled
+#   bash measure.sh                         # the optional local model
+#   MODEL=granite4:3b bash measure.sh       # any model you have pulled
 #
 # Read two numbers from the --verbose block: "prompt eval rate" is how fast the
 # model reads (prefill), and "eval rate" is how fast it writes. Both are tokens/s.
 
 set -euo pipefail
 cd "$(dirname "$0")"
-MODEL="${MODEL:-ministral-3:8b-32k}"
+MODEL="${MODEL:-ministral-3:8b-32k}"  # optional step up for a 16 GB laptop
 
 # 0. WHAT IS LOADED, AND WHERE ###################################
 # Load the model first with a one-word reply, so ollama ps has something to show.
 ollama run "$MODEL" "Reply with one word: ok." > /dev/null
-# CONTEXT should say 32768. PROCESSOR should say 100% GPU on a Mac; CPU is slower.
+# PROCESSOR says 100% GPU on a Mac; CPU is much slower.
 ollama ps
 
 # 1. A FIXED PROMPT, SO EVERYONE MEASURES THE SAME THING ###################################

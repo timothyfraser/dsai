@@ -16,7 +16,7 @@
 
 # If you haven't already, install these packages...
 # install.packages(c("httr2", "jsonlite", "reticulate"))
-# reticulate::py_install("faster-whisper")
+# reticulate::py_install(c("faster-whisper", "av<19"))  # av 19 breaks faster-whisper 1.2.1
 # and pull the model in Ollama: ollama pull granite4:3b
 
 # 0. SETUP ###################################

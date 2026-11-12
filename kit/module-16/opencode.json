@@ -1,16 +1,25 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "provider": {
-    "ollama": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "Ollama (local)",
+    "google": {
+      "npm": "@ai-sdk/google",
+      "name": "Gemini, free tier",
       "options": {
-        "baseURL": "http://localhost:11434/v1"
+        "apiKey": "{env:GOOGLE_GENERATIVE_AI_API_KEY}"
       },
       "models": {
-        "ministral-3:8b-32k": { "name": "Ministral 3 8B, 32k context" },
-        "qwen3:8b": { "name": "Qwen3 8B" },
-        "qwen3:4b": { "name": "Qwen3 4B" }
+        "gemini-flash-lite-latest": { "name": "Gemini Flash-Lite (latest)" }
+      }
+    },
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama, local (optional step up for a 16 GB laptop)",
+      "options": {
+        "baseURL": "http://127.0.0.1:11434/v1",
+        "timeout": 1200000
+      },
+      "models": {
+        "ministral-3:8b-32k": { "name": "Ministral 3 8B, 32k context (optional step up for a 16 GB laptop)" }
       }
     }
   },
@@ -18,7 +27,8 @@
     "lean": {
       "description": "One task, one file, three commands. Reads AGENTS.md.",
       "mode": "primary",
-      "model": "ollama/ministral-3:8b-32k",
+      "model": "google/gemini-flash-lite-latest",
+      "prompt": "You are a careful coding agent working on one small task. The task contract is in AGENTS.md. Follow it exactly. Use the bash tool to run commands, the read tool to read files and the edit tool to edit files. Keep replies short.",
       "tools": {
         "read": true,
         "edit": true,
@@ -31,7 +41,16 @@
         "webfetch": false,
         "task": false,
         "todowrite": false,
-        "todoread": false
+        "todoread": false,
+        "skill": false,
+        "question": false,
+        "lsp": false,
+        "websearch": false,
+        "codesearch": false,
+        "multiedit": false,
+        "apply_patch": false,
+        "batch": false,
+        "execute": false
       },
       "permission": {
         "edit": "allow",

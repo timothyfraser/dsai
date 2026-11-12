@@ -114,8 +114,16 @@ OLLAMA_LOG = tempfile("ollama_serve_", fileext = ".log")
 Sys.setenv(OLLAMA_HOST = OLLAMA_HOST)
 Sys.setenv(OLLAMA_CONTEXT_LENGTH = "32000")
 
-# Start `ollama serve` in the background so R stays usable
-system2("ollama", args = "serve", wait = FALSE, stdout = OLLAMA_LOG, stderr = OLLAMA_LOG)
+# Only start a server if none answers (Ollama may already be running)
+old_timeout = options(timeout = 2)  # a 2-second check, then the default again
+RUNNING = !is.null(tryCatch(suppressWarnings(readLines(paste0("http://127.0.0.1:", PORT, "/api/version"), warn = FALSE)), error = function(e) NULL))
+options(old_timeout)
+if (RUNNING) {
+  cat("Ollama is already running; using it.\n")
+} else {
+  # Start `ollama serve` in the background so R stays usable
+  system2("ollama", args = "serve", wait = FALSE, stdout = OLLAMA_LOG, stderr = OLLAMA_LOG)
+}
 
 
 # Wait briefly for server readiness before the first chat call
