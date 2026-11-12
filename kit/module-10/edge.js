@@ -13,9 +13,9 @@ export const RUNTIME_URL =
 // Gemma 3 1B (Google), 4-bit weights: about 760 MB, downloaded once, then cached. Smaller models did not keep the JSON reply format.
 export const MODEL_ID = "onnx-community/gemma-3-1b-it-ONNX-GQA";
 
-// An optional lighter model for a laptop short on memory, about 480 MB. Add ?model=light to the address to use it.
-// It is from a Chinese lab (Alibaba), so check your employer's approved list before you use it at work.
-export const ALT_MODEL_ID = "onnx-community/Qwen2.5-0.5B-Instruct";
+// An optional lighter model for a laptop short on memory: LFM2 350M from Liquid AI, about 245 MB. Add ?model=light to the address to use it.
+// It breaks the reply format more often than the default, and a company with $10 million or more in revenue needs a licence from Liquid AI to use it.
+export const ALT_MODEL_ID = "onnx-community/LFM2-350M-ONNX";
 
 // The model this page loads: the lighter one only when the address has ?model=light, else the default.
 // A worker has no page address, so the page calls this and passes the answer in its load message.
@@ -34,7 +34,7 @@ export function showRoute(el) {
   el.textContent = "";
   if (light) {
     a.textContent = "Back to the default model";
-    el.append("Running the lighter model, Qwen2.5 0.5B (Alibaba). It is from a Chinese lab: check your employer's approved list before you use it at work. ", a);
+    el.append("Running the lighter model, LFM2 350M (Liquid AI). It breaks the reply format more often than the default, and a company with $10 million or more in revenue needs a licence from Liquid AI to use it. ", a);
   } else {
     a.textContent = "Load the lighter model";
     el.append("Short on memory? ", a, ".");

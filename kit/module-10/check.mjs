@@ -204,8 +204,8 @@ try {
   };
   const lt = await route(base + "&model=light"), df = await route(base);
   check(9, "the page names its model: lighter-route line with ?model=light, default-route line without",
-    lt.text.startsWith("Running the lighter model, Qwen2.5 0.5B (Alibaba).") && lt.text.endsWith("Back to the default model") && !lt.link.includes("model=light") && lt.link.includes("timeout=") &&
-    df.text === "Short on memory? Load the lighter model." && df.link.includes("model=light") && !df.text.includes("Qwen"),
+    lt.text.startsWith("Running the lighter model, LFM2 350M (Liquid AI). It breaks the reply format more often than the default, and a company with $10 million or more in revenue needs a licence from Liquid AI to use it.") && lt.text.endsWith("Back to the default model") && !lt.link.includes("model=light") && lt.link.includes("timeout=") &&
+    df.text === "Short on memory? Load the lighter model." && df.link.includes("model=light") && !df.text.includes("LFM2"),
     "light: " + lt.text.slice(0, 40) + "...; default: " + df.text);
 } catch (err) {
   check("x", "the check script itself ran", false, err.message.split("\n")[0]);
