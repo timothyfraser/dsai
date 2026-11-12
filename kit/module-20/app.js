@@ -3,7 +3,7 @@
 //   1. Find the best matching note first. If nothing matches well, refuse without asking the model.
 //   2. The model must reply with JSON: {"answer": "...", "source": "<note id>"}.
 //   3. The answer must arrive within the time budget, or the page says it ran out of time.
-import { graphicsPath, stubMode, memoryMB, CHROME_LINE } from "../module-10/edge.js";   // engine helpers, shared with Module 10
+import { graphicsPath, stubMode, memoryMB, chosenModel, showRoute, CHROME_LINE } from "../module-10/edge.js";   // engine helpers, shared with Module 10
 import { bestNote } from "./match.js";                         // the note matcher, shared with refusal.mjs
 
 // The two numbers that decide when the assistant gives up and when it refuses. TIME_BUDGET_MS comes
@@ -56,14 +56,14 @@ function startWorker() {
       if (m.type === "reply" || (m.type === "error" && m.id !== undefined)) { waiting.get(m.id)?.(m); waiting.delete(m.id); }
     };
     worker.onerror = (e) => reject(new Error(e.message || "the model worker failed to start"));
-    worker.postMessage({ type: "load", device: gpu.device, why: gpu.why, stub: stubMode() });
+    worker.postMessage({ type: "load", device: gpu.device, why: gpu.why, stub: stubMode(), model: chosenModel() });
   });
 }
 function generate(messages) {
   const id = ++nextId;
   return new Promise((resolve, reject) => {
     waiting.set(id, (m) => (m.type === "reply" ? resolve(m) : reject(new Error(m.message))));
-    worker.postMessage({ type: "generate", id, messages, device: gpu.device, why: gpu.why, stub: stubMode() });
+    worker.postMessage({ type: "generate", id, messages, device: gpu.device, why: gpu.why, stub: stubMode(), model: chosenModel() });
   });
 }
 
@@ -90,6 +90,7 @@ async function ask(question) {
 }
 
 async function main() {
+  showRoute($("route"));
   notes = (await (await fetch("./notes.json")).json()).notes;
   const noOffline = () => { offlineNote = "Offline use is not available in this browser."; say("Starting..."); };
   if ("serviceWorker" in navigator) {

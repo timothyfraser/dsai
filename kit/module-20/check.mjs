@@ -2,15 +2,17 @@
 // One-time install, from this folder:  npm install playwright   then   npx playwright install chromium
 //   EDGE_STUB=1 node check.mjs      fake model, no network needed (what CI runs)
 //   node check.mjs                  the real model (needs the network for the first load)
+//   EDGE_MODEL=light opens every page with ?model=light, so the whole check runs on the lighter route.
 //   EDGE_BROWSER=chrome (or msedge) runs your installed browser; a real-model run needs it, because the bundled headless browser has no graphics adapter.
 // Your written decision on MIN_SCORE and TIME_BUDGET_MS has its own check: node decision.mjs
-// It serves the kit folder on a local port (the engine is ../module-10/edge.js), opens the page, and runs six checks:
+// It serves the kit folder on a local port (the engine is ../module-10/edge.js), opens the page, and runs seven checks:
 //   1. the page starts and reports its engine
 //   2. a question inside the notes gets an answer, with its source, within the time budget
 //   3. a question outside the notes is refused
 //   4. with the network cut off, a reload still works and still answers
 //   5. the question about the bottle label reaches the labelling note, n4
 //   6. with WebGPU removed, the page says to use Google Chrome, loads no model, and still shows the matching note
+//   7. the page names the model it runs: the lighter-route line with ?model=light, the default-route line without
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
@@ -31,6 +33,7 @@ catch (e) {
 }
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const STUB = process.env.EDGE_STUB === "1";
+const LIGHT = process.env.EDGE_MODEL === "light";
 const KIT = path.dirname(HERE);   // serve kit/, so ../module-10/edge.js (the shared engine) resolves
 // The time budget is read from app.js, so the check tests the number you chose, not a copy of it.
 const BUDGET_MS = Number(fs.readFileSync(path.join(HERE, "app.js"), "utf8").match(/const TIME_BUDGET_MS = (\d+)/)[1]);
@@ -46,7 +49,8 @@ const server = http.createServer((req, res) => {
   fs.createReadStream(file).pipe(res);
 });
 await new Promise((r) => server.listen(0, "127.0.0.1", r));
-const url = "http://127.0.0.1:" + server.address().port + "/module-20/" + (STUB ? "?stub=1" : "");
+const base = "http://127.0.0.1:" + server.address().port + "/module-20/" + (STUB ? "?stub=1" : "");
+const url = base + (LIGHT ? (STUB ? "&" : "?") + "model=light" : "");
 
 let failed = 0;
 const check = (n, label, ok, detail) => {
@@ -76,7 +80,7 @@ async function askQ(q) {
 
 try {
   const gpu = await page.evaluate(async () => !!(navigator.gpu && (await navigator.gpu.requestAdapter().catch(() => null))));
-  console.log("mode: " + (STUB ? "stub (fake model)" : "real model") + "; WebGPU adapter in this browser: " + (gpu ? "yes" : "no"));
+  console.log("mode: " + (STUB ? "stub (fake model)" : "real model") + "; route: " + (LIGHT ? "lighter model" : "default model") + "; WebGPU adapter in this browser: " + (gpu ? "yes" : "no"));
 
   await page.goto(url, { timeout: loadMs });
   await page.waitForFunction(() => document.body.dataset.ready, null, { timeout: loadMs });
@@ -122,6 +126,21 @@ try {
   const chromeLine = "This page needs Google Chrome with graphics acceleration on. Open it in Chrome to run the model.";
   check(6, "No WebGPU: the page says to use Google Chrome, loads no model, still shows the matching note",
     n.status.startsWith(chromeLine) && n.workers === 0 && n.out.includes("Label every bottle"), "workers started: " + n.workers + "; " + n.out.slice(0, 60));
+
+  // The route line under the status names the model in use, and links to the other route.
+  const route = async (u) => {
+    const r = await context.newPage();
+    await r.goto(u, { timeout: loadMs });
+    await r.waitForFunction(() => document.body.dataset.ready, null, { timeout: loadMs });
+    const v = await r.evaluate(() => ({ text: document.querySelector("#route").textContent, link: document.querySelector("#route a")?.getAttribute("href") || "" }));
+    await r.close();
+    return v;
+  };
+  const lt = await route(base + (STUB ? "&" : "?") + "model=light"), df = await route(base);
+  check(7, "the page names its model: lighter-route line with ?model=light, the default-route line without",
+    lt.text.startsWith("Running the lighter model, Qwen2.5 0.5B (Alibaba).") && lt.text.endsWith("Back to the default model") && !lt.link.includes("model=light") &&
+    df.text === "Short on memory? Load the lighter model." && df.link.includes("model=light") && (!STUB || df.link.includes("stub=1")) && !df.text.includes("Qwen"),
+    "light: " + lt.text.slice(0, 40) + "...; default: " + df.text);
 } catch (err) {
   check("x", "the check script itself ran", false, err.message.split("\n")[0]);
 } finally {

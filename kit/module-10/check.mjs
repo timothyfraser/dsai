@@ -8,9 +8,10 @@
 // Usage, from this folder:
 //   EDGE_STUB=1 node check.mjs     fake browser model, no download (what CI runs)
 //   node check.mjs                 the real model (needs the network for the first load)
+//   EDGE_MODEL=light opens every page with ?model=light, so the whole check runs on the lighter route.
 //   EDGE_BROWSER=chrome (or msedge) runs your installed browser; a real-model run needs it, because the bundled headless browser has no graphics adapter.
 // The team API is never called: page.route() stands in for it, so the checks can make it
-// answer, fail, go slow, or vanish on purpose. Eight checks:
+// answer, fail, go slow, or vanish on purpose. Nine checks:
 //   C1 the page starts and names its engine
 //   C2 the server's answer is shown and labelled as the server's
 //   C3 with WebGPU removed, the page says to use Google Chrome and loads no model
@@ -19,6 +20,7 @@
 //   C6 with the network off, after one visit, a reload still opens and answers (or says plainly it cannot)
 //   C7 no file the page served holds anything that looks like a key
 //   C8 measures.json parses and holds at least two devices with every number
+//   C9 the page names the model it runs: the lighter-route line with ?model=light, the default-route line without
 
 // 0. SETUP ###################################
 
@@ -43,6 +45,7 @@ catch (e) {
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const KIT = path.dirname(HERE);   // serve kit/, the folder Module 20 shares this engine from
 const STUB = process.env.EDGE_STUB === "1";
+const LIGHT = process.env.EDGE_MODEL === "light";
 const TIMEOUT_MS = 1500;          // the page's API timeout for these checks (?timeout=)
 const RULES = JSON.parse(fs.readFileSync(path.join(HERE, "rules.json"), "utf8"));
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".json": "application/json" };
@@ -61,7 +64,8 @@ const server = http.createServer((req, res) => {
   fs.createReadStream(file).pipe(res);
 });
 await new Promise((r) => server.listen(0, "127.0.0.1", r));
-const url = "http://127.0.0.1:" + server.address().port + "/module-10/?api=/api/ask&timeout=" + TIMEOUT_MS + (STUB ? "&stub=1" : "");
+const base = "http://127.0.0.1:" + server.address().port + "/module-10/?api=/api/ask&timeout=" + TIMEOUT_MS + (STUB ? "&stub=1" : "");
+const url = base + (LIGHT ? "&model=light" : "");
 
 let failed = 0;
 const check = (n, label, ok, detail) => {
@@ -124,7 +128,7 @@ const FAKE_BUILTIN = () => {
 // 3. THE CHECKS ###################################
 
 try {
-  console.log("mode: " + (STUB ? "stub (fake browser model)" : "real browser model") + "; API: mocked with page.route; API timeout " + TIMEOUT_MS + " ms");
+  console.log("mode: " + (STUB ? "stub (fake browser model)" : "real browser model") + "; route: " + (LIGHT ? "lighter model" : "default model") + "; API: mocked with page.route; API timeout " + TIMEOUT_MS + " ms");
 
   const { context, page } = await open(NO_BUILTIN);
   const engine = await page.textContent("#engine");
@@ -188,6 +192,21 @@ try {
   check(6, "network off after one visit: reload opens and answers or says plainly it cannot",
     BROWSER.includes(d.kind) || d.kind === "none", d.path + ", " + d.ms + " ms");
   await context.close();
+
+  // The route line under the status names the model in use, and links to the other route.
+  const route = async (u) => {
+    const c = await browser.newContext(); const p = await c.newPage();
+    await p.goto(u, { timeout: loadMs });
+    await p.waitForFunction(() => document.body.dataset.ready, null, { timeout: loadMs });
+    const r = await p.evaluate(() => ({ text: document.querySelector("#route").textContent, link: document.querySelector("#route a")?.getAttribute("href") || "" }));
+    await c.close();
+    return r;
+  };
+  const lt = await route(base + "&model=light"), df = await route(base);
+  check(9, "the page names its model: lighter-route line with ?model=light, default-route line without",
+    lt.text.startsWith("Running the lighter model, Qwen2.5 0.5B (Alibaba).") && lt.text.endsWith("Back to the default model") && !lt.link.includes("model=light") && lt.link.includes("timeout=") &&
+    df.text === "Short on memory? Load the lighter model." && df.link.includes("model=light") && !df.text.includes("Qwen"),
+    "light: " + lt.text.slice(0, 40) + "...; default: " + df.text);
 } catch (err) {
   check("x", "the check script itself ran", false, err.message.split("\n")[0]);
 } finally {

@@ -8,7 +8,7 @@
 
 // 0. SETUP ###################################
 
-import { graphicsPath, stubMode, CHROME_LINE } from "./edge.js";
+import { graphicsPath, stubMode, chosenModel, showRoute, CHROME_LINE } from "./edge.js";
 import { builtinModel } from "./builtin.js";
 import { record, summary, saveFile } from "./measure.js";
 import { canListen, listen } from "./voice.js";
@@ -85,7 +85,7 @@ function shipped(messages) {
   const id = ++nextId;
   return new Promise((resolve, reject) => {
     waiting.set(id, (m) => (m.type === "reply" ? resolve(m) : reject(new Error(m.message))));
-    worker.postMessage({ type: messages ? "generate" : "load", id, messages, device: gpu.device, why: gpu.why, stub: stubMode() });
+    worker.postMessage({ type: messages ? "generate" : "load", id, messages, device: gpu.device, why: gpu.why, stub: stubMode(), model: chosenModel() });
   });
 }
 
@@ -174,7 +174,8 @@ $("mic").addEventListener("click", async () => { $("speech").textContent = await
 
 // Ask, never assume: WebGPU, the built-in model and speech are each checked, and the answer is shown.
 async function main() {
-  gpu = await graphicsPath();
+  showRoute($("route"));
+  gpu =await graphicsPath();
   $("engine").textContent = gpu.ok ? gpu.device + " (" + gpu.why + "), not loaded yet" : CHROME_LINE;
   if (!gpu.ok) $("prep").disabled = true;
   builtin = await builtinModel();

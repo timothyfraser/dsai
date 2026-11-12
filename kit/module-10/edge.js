@@ -13,6 +13,35 @@ export const RUNTIME_URL =
 // Gemma 3 1B (Google), 4-bit weights: about 760 MB, downloaded once, then cached. Smaller models did not keep the JSON reply format.
 export const MODEL_ID = "onnx-community/gemma-3-1b-it-ONNX-GQA";
 
+// An optional lighter model for a laptop short on memory, about 480 MB. Add ?model=light to the address to use it.
+// It is from a Chinese lab (Alibaba), so check your employer's approved list before you use it at work.
+export const ALT_MODEL_ID = "onnx-community/Qwen2.5-0.5B-Instruct";
+
+// The model this page loads: the lighter one only when the address has ?model=light, else the default.
+// A worker has no page address, so the page calls this and passes the answer in its load message.
+export function chosenModel() {
+  return typeof location !== "undefined" && new URLSearchParams(location.search).get("model") === "light" ? ALT_MODEL_ID : MODEL_ID;
+}
+
+// The one line under the status that says which model runs and links to the other route.
+// The link keeps every other address option (such as ?stub=1) and only adds or drops model=light.
+export function showRoute(el) {
+  const light = chosenModel() === ALT_MODEL_ID;
+  const u = new URL(location.href);
+  if (light) u.searchParams.delete("model"); else u.searchParams.set("model", "light");
+  const a = document.createElement("a");
+  a.href = u.href;
+  el.textContent = "";
+  if (light) {
+    a.textContent = "Back to the default model";
+    el.append("Running the lighter model, Qwen2.5 0.5B (Alibaba). It is from a Chinese lab: check your employer's approved list before you use it at work. ", a);
+  } else {
+    a.textContent = "Load the lighter model";
+    el.append("Short on memory? ", a, ".");
+  }
+  el.dataset.route = light ? "light" : "default";
+}
+
 export function stubMode() {
   if (typeof window !== "undefined" && window.EDGE_STUB === true) return true;
   return new URLSearchParams(location.search).get("stub") === "1";
@@ -57,18 +86,19 @@ function stubGenerate(messages) {
 }
 
 // Load the engine once. onStatus(text) reports progress to the page.
-// opts.device ("webgpu" or "wasm") and opts.stub let a caller that already asked pass its answers in:
-// worker.js does, because a check that removes WebGPU from the page cannot reach inside a worker.
+// opts.device ("webgpu" or "wasm"), opts.stub and opts.model let a caller that already asked pass its answers in:
+// worker.js does, because a check that removes WebGPU from the page cannot reach inside a worker,
+// and a worker has no page address to read ?model=light from.
 export async function loadEngine(onStatus = () => {}, opts = {}) {
   if (opts.stub || stubMode()) {
     onStatus("Stub model ready (no download).");
-    return { device: "stub", why: "stub mode", generate: async (msgs) => ({ text: stubGenerate(msgs), tokens: 12 }) };
+    return { device: "stub", why: "stub mode", model: opts.model || chosenModel(), generate: async (msgs) => ({ text: stubGenerate(msgs), tokens: 12 }) };
   }
   const { device, why } = opts.device ? { device: opts.device, why: opts.why || "chosen by the page" } : await detectDevice();
   onStatus("Engine: " + device + " (" + why + "). Loading the runtime...");
   const tf = await import(RUNTIME_URL);
   const dtype = device === "webgpu" ? "q4f16" : "q4";
-  const pipe = await tf.pipeline("text-generation", MODEL_ID, {
+  const pipe = await tf.pipeline("text-generation", opts.model || chosenModel(), {
     device, dtype,
     progress_callback: (p) => { if (p.status === "progress") onStatus("Downloading " + p.file + ": " + Math.round(p.progress) + "%"); },
   });
