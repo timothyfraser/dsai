@@ -19,7 +19,7 @@ SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv"}
 PATTERNS = {
     "Supabase secret key": re.compile("sb_" + "secret_[A-Za-z0-9_-]{8,}"),
     "a JWT (a legacy Supabase key is one)": re.compile("eyJ" + r"[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}"),
-    "an API key assigned a value": re.compile(r"(OLLAMA|OPENAI|ANTHROPIC)_API_KEY\s*[=:]\s*['\"]?[A-Za-z0-9_-]{16,}"),
+    "an API key assigned a value": re.compile(r"(GEMINI|OPENAI|ANTHROPIC)_API_KEY\s*[=:]\s*['\"]?[A-Za-z0-9_-]{16,}"),
     "a private key block": re.compile("-----BEGIN " + "[A-Z ]*PRIVATE KEY-----"),
 }
 

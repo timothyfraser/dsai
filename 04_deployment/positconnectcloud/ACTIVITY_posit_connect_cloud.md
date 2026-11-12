@@ -31,7 +31,7 @@ Follow the documentation to deploy your application to Posit Cloud Connect!
 ![](../../docs/images/positconnectcloud_app_type.png)
 5. Specify the repository and path to your app. There **must** be a valid `prerequisites.txt` for Python or `manifest.json` if R in that folder, or it will flag an error.
 ![](../../docs/images/positconnectcloud_app_path.png)
-6. Under Advanced Settings, add any secret environmental variables your project needs! For example, if you make queries to a cloud-hosted AI model or to a specific cloud hosted API, this is the place to put those API Keys! Make sure you name it exactly the way it appears in your local codebase. Eg. `OPENAI_API_KEY`, `OLLAMA_CLOUD_API_KEY`, `CENSUS_API_KEY`, etc.
+6. Under Advanced Settings, add any secret environmental variables your project needs! For example, if you make queries to a cloud-hosted AI model or to a specific cloud hosted API, this is the place to put those API Keys! Make sure you name it exactly the way it appears in your local codebase. Eg. `OPENAI_API_KEY`, `GEMINI_API_KEY`, `CENSUS_API_KEY`, etc.
 ![](../../docs/images/positcloudconnect_environmental_vars.png)
 7. When ready, press **Publish**. Your app will begin to **build** its image, installing packages. The first time it builds, it will take a bit of time. Subsequently, it will cache package installation, so later 'builds' may be faster.
 ![](../../docs/images/positcloudconnect_build.png)

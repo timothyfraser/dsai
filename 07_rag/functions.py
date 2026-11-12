@@ -19,7 +19,7 @@ import pandas as pd  # for data manipulation
 ## 0.2 Configuration #################################
 
 # Default model and Ollama connection
-DEFAULT_MODEL = "smollm2:135m"
+DEFAULT_MODEL = "granite4:3b"
 PORT = 11434
 OLLAMA_HOST = f"http://localhost:{PORT}"
 CHAT_URL = f"{OLLAMA_HOST}/api/chat"
@@ -36,7 +36,7 @@ def agent(messages, model=DEFAULT_MODEL, output="text", tools=None, all=False):
         List of message dictionaries with 'role' and 'content' keys.
         Must follow format: [{"role": "system", "content": "..."}, ...]
     model : str
-        The model to be used for the agent (default: "smollm2:135m")
+        The model to be used for the agent (default: "granite4:3b")
     output : str
         The output format (default: "text")
     tools : list, optional

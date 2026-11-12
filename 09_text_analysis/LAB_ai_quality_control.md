@@ -66,7 +66,7 @@ Create an AI-powered text quality control system that automatically evaluates AI
 ## 💡 Tips and Resources
 
 - **Prompt Design**: Be specific about JSON format requirements. Some models work better with explicit format instructions.
-- **Model Selection**: For JSON output, use models that support structured output (e.g., `llama3.2:latest` for Ollama, `gpt-4o-mini` for OpenAI)
+- **Model Selection**: For JSON output, use models that support structured output (e.g., `granite4:3b` for Ollama, `gpt-4o-mini` for OpenAI)
 - **Error Handling**: If JSON parsing fails, the script extracts JSON from text responses. You may need to adjust parsing logic for your specific model.
 - **Quality Control Criteria**: The criteria are based on research in `docs/prep/samplevalidation.tex`. You can adapt them for your specific use case.
 - **Batch Quality Control**: The script includes a function to check multiple reports. Uncomment the batch quality control section to test it.

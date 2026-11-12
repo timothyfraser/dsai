@@ -25,8 +25,8 @@ The minimal example below keeps the same lesson variables and flow, but each ste
 - **Chunking**: [`get_text(document_path)` in `05_embed.py`](05_embed.py#L146-L155) and its R version [`get_text(DOCUMENT)` in `05_embed.R`](05_embed.R#L145-L158)
 - **Index build (store vectors)**: [`build_index_from_document(conn, chunks)` in `05_embed.py`](05_embed.py#L160-L179) and its R version [`build_index_from_document(conn, chunks)` in `05_embed.R`](05_embed.R#L161-L178)
 - **Similarity search (KNN)**: [`search_embed_sql(conn, query, k)` in `05_embed.py`](05_embed.py#L186-L207) and its R version [`search_embed_sql(conn, query, k)` in `05_embed.R`](05_embed.R#L186-L197)
-- **LLM call in `05_embed.py` (Ollama Cloud)**: [`agent_run(role, task, model=...)`](05_embed.py#L83-L123)
-- **LLM call in `05_embed.R` (Ollama Cloud)**: [`agent_run(role, task, model=...)`](05_embed.R#L75-L114)
+- **LLM call in `05_embed.py` (Gemini free tier)**: [`agent_run(role, task, model=...)`](05_embed.py#L88-L131)
+- **LLM call in `05_embed.R` (Gemini free tier)**: [`agent_run(role, task, model=...)`](05_embed.R#L66-L95)
 - **LLM wrapper (Python helper)**: [`agent_run(role, task, ...)` in `functions.py`](functions.py#L103-L134)
 - **LLM wrapper (R helper)**: [`agent_run(role, task, ...)` in `functions.R`](functions.R#L69-L84)
 

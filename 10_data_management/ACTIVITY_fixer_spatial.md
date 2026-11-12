@@ -8,7 +8,7 @@
 
 ## 📋 Overview
 
-You will run **[`fixer/fixer_parcels.R`](fixer/fixer_parcels.R)** and **[`fixer/fixer_pois.R`](fixer/fixer_pois.R)**, *or* the Python twins **[`fixer/fixer_parcels.py`](fixer/fixer_parcels.py)** and **[`fixer/fixer_pois.py`](fixer/fixer_pois.py)**. Each script calls **Ollama** with **batched tool calls** (one **`/api/chat` per chunk** of rows): parcels get **`record_parcel_zoning`** from **polygon** rows (**`wkt`** in WGS84); POIs get **`record_poi_category`** from **point** rows (**`x`**, **`y`**). Outputs are enriched CSVs, **audit JSONL** files, and **before/after** maps (**`sf`** + **`ggplot2`** in R, **`geopandas`** + **`matplotlib`** in Python) under **`fixer/output/`**.
+You will run **[`fixer/fixer_parcels.R`](fixer/fixer_parcels.R)** and **[`fixer/fixer_pois.R`](fixer/fixer_pois.R)**, *or* the Python twins **[`fixer/fixer_parcels.py`](fixer/fixer_parcels.py)** and **[`fixer/fixer_pois.py`](fixer/fixer_pois.py)**. Each script calls a **model API** with **batched tool calls** (one **model call per chunk** of rows): parcels get **`record_parcel_zoning`** from **polygon** rows (**`wkt`** in WGS84); POIs get **`record_poi_category`** from **point** rows (**`x`**, **`y`**). Outputs are enriched CSVs, **audit JSONL** files, and **before/after** maps (**`sf`** + **`ggplot2`** in R, **`geopandas`** + **`matplotlib`** in Python) under **`fixer/output/`**.
 
 More detail: **[`fixer/README.md`](fixer/README.md)**.
 
@@ -20,7 +20,7 @@ More detail: **[`fixer/README.md`](fixer/README.md)**.
 
 - [ ] **R track:** Install **`dplyr`**, **`readr`**, **`jsonlite`**, **`purrr`**, **`sf`**, **`ggplot2`**, **`httr2`**, **`future`**, and **`furrr`**.
 - [ ] **Python track:** **`pip install -r 10_data_management/fixer/requirements.txt`**.
-- [ ] Same **`fixer/.env`** as the CSV activity: **`OLLAMA_API_KEY`**, **`OLLAMA_HOST`**, **`OLLAMA_MODEL`**.
+- [ ] Same **`fixer/.env`** as the CSV activity: **`GEMINI_API_KEY`**, **`LLM_BASE_URL`**, **`LLM_MODEL`**. Get a free key at [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey). The free tier may use your prompts to improve Google's products, so send only public or made-up data. To run it on your own computer instead, run `ollama pull granite4:3b`, then set **`LLM_BASE_URL=http://localhost:11434/v1`** and **`LLM_MODEL=granite4:3b`** (no key needed).
 - [ ] Confirm **`fixer/data/parcels_zoning_raw.csv`** (polygons in **`wkt`**) and **`fixer/data/pois_messy_raw.csv`** exist.
 
 ### 🧱 Stage 2: Run and verify
@@ -46,7 +46,7 @@ More detail: **[`fixer/README.md`](fixer/README.md)**.
 
 ## 💡 Building similar scripts (Cursor)
 
-If you use **Cursor** with this repository, these **Agent Skills** under [`.cursor/skills/`](../.cursor/skills/) can help when you write your own batched Ollama + R workflows (including GIS tool routing like **`fixer_spatial_context.R`**):
+If you use **Cursor** with this repository, these **Agent Skills** under [`.cursor/skills/`](../.cursor/skills/) can help when you write your own batched LLM + R workflows (including GIS tool routing like **`fixer_spatial_context.R`**):
 
 - **[`data-science-agent-loop`](../.cursor/skills/data-science-agent-loop/SKILL.md)** — short-lived agent loops: `.env`, batch size, tool design (model routes tools; code runs **sf**), and contrast with **`agentr`** / **`agentpy`**.
 - **[`console-message`](../.cursor/skills/console-message/SKILL.md)** — clear console progress for long runs (paths, chunk counts, previews).

@@ -1,6 +1,6 @@
 # 📌 ACTIVITY
 
-## Set Up Ollama API Key
+## Set Up Gemini API Key
 
 🕒 *Estimated Time: 5 minutes*
 
@@ -8,14 +8,15 @@
 
 ## ✅ Your Task
 
-Set up your **Ollama** API key to query **Ollama Cloud** models. This allows you to use larger models that run on Ollama's servers instead of your local computer.
+Set up a free **Google Gemini** API key to query a cloud model. This lets you use a larger model that runs on Google's servers instead of your local computer. Ollama's cloud now charges per token, so the course uses Google's free tier.
+
+The free tier may use your prompts to improve Google's products, so send only public or made-up data.
 
 ### 🔑 1. Get Your API Key
 
-- [ ] Go to [ollama.com](https://ollama.com) and sign in or create an account
-- [ ] Navigate to your account settings or **API keys** section
-- [ ] Click **Create new secret key** or **Generate API key**
-- [ ] Copy the API key immediately (you may not be able to see it again)
+- [ ] Go to [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) and sign in with a Google account
+- [ ] Click **Create API key**
+- [ ] Copy the API key immediately
 - [ ] Save it somewhere safe temporarily
 
 ### 💾 2. Store Your API Key
@@ -25,7 +26,7 @@ Set up your **Ollama** API key to query **Ollama Cloud** models. This allows you
 - [ ] Add your API key in this format:
 
 ```
-OLLAMA_API_KEY=your_api_key_here
+GEMINI_API_KEY=your_api_key_here
 ```
 
 - [ ] Save the `.env` file

@@ -9,18 +9,23 @@ source .bashrc
 # Configuration
 PORT=11434  # Default Ollama port (change as needed)
 # Set environment variable for port
-export OLLAMA_HOST="0.0.0.0:$PORT"
-MODEL="smollm2:1.7b"  # Small, reputable model (3.3GB)
+export OLLAMA_HOST="127.0.0.1:$PORT"
+MODEL="granite4:3b"  # Small, reputable model from IBM
 SERVER_PID=""
 MODEL_PID=""
 
 # Start server in background, and assign the process ID to the SERVER_PID variable
-ollama serve > /dev/null 2>&1 & SERVER_PID=$!
+# Only start a server if none answers (Ollama may already be running)
+if curl -s -m 2 http://127.0.0.1:$PORT/api/version > /dev/null; then
+  echo "Ollama is already running; using it."
+else
+  ollama serve > /dev/null 2>&1 & SERVER_PID=$!
+fi
 # View the process ID of ollama
 echo $SERVER_PID
 
 # Pull model of interest
-# ollama pull $MODEL
+# ollama pull granite4:3b
 
 # run model of interest interactively -- usually I don't want this
 # ollama run $MODEL & MODEL_PID=$!
@@ -58,10 +63,10 @@ echo "$test" | jq '.'
 echo "$test" | jq '.model, .response'
 
 
-test=$(curl -s -X POST http://localhost:$PORT/api/generate \
+test=$(curl -s -X POST http://localhost:$PORT/api/chat \
     -H "Content-Type: application/json" \
     -d '{
-        "model": "smollm2:1.7b",
+        "model": "granite4:3b",
         "stream": false,
         "messages": [
             {

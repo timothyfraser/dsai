@@ -35,7 +35,7 @@ Build and deploy a new **AI-powered system** in response to one of three prompts
 
 - [ ] Design an AI-powered tool that responds to your chosen prompt
 - [ ] Define your stakeholder and use case
-- [ ] Plan how you'll integrate **generative AI** (OpenAI or Ollama Cloud)
+- [ ] Plan how you'll integrate **generative AI** (OpenAI or Google's free Gemini tier)
 - [ ] Decide on your deployment platform (REST API, Shiny App, or other deployable app)
 
 ### Task 3: Build Your Tool

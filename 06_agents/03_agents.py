@@ -30,7 +30,7 @@ from functions import agent_run, get_shortages, df_as_text
 # 1. CONFIGURATION ###################################
 
 # Select model of interest
-MODEL = "smollm2:135m"
+MODEL = "granite4:3b"
 
 # We will use the FDA Drug Shortages API to get data on drug shortages.
 # https://open.fda.gov/apis/drug/drugshortages/
@@ -88,8 +88,8 @@ result2
 
 # Task 3 - Press Release Agent -------------------------
 # This agent takes the analysis and writes a press release
-role3 = "I write a 1-page press release on the currently ongoing shortages, 
-using the analysis provided by the user."
+role3 = ("I write a 1-page press release on the currently ongoing shortages, "
+    "using the analysis provided by the user.")
 result3 = agent_run(role=role3, task=result2, model=MODEL, output="text")
 result3
 

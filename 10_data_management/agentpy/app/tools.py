@@ -1,5 +1,5 @@
 # tools.py
-# CrewAI SerperDevTool for web search + read_skill helpers for Ollama tool calling
+# CrewAI SerperDevTool for web search + read_skill helpers for tool calling
 # Tim Fraser
 
 import json
@@ -92,8 +92,8 @@ def _assemble_search_payload(ref_block: str, body: str) -> str:
     return _truncate(combined)
 
 
-def ollama_tool_definitions() -> list[dict[str, Any]]:
-    """OpenAI-style tool specs for Ollama /api/chat."""
+def tool_definitions() -> list[dict[str, Any]]:
+    """OpenAI-style tool specs for the chat endpoint."""
     return [
         {
             "type": "function",
@@ -142,7 +142,7 @@ def ollama_tool_definitions() -> list[dict[str, Any]]:
 
 
 def parse_function_arguments(raw: Any) -> dict[str, Any]:
-    """Ollama may return function.arguments as a dict or a JSON string."""
+    """function.arguments is a JSON string (a dict is also accepted)."""
     if isinstance(raw, dict):
         return raw
     if isinstance(raw, str):

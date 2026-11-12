@@ -22,7 +22,7 @@ Complete these activities in order:
    - [`01_ollama.sh`](01_ollama.sh) — Start Ollama server
    - [`02_ollama.py`](02_ollama.py) — Python example
    - [`02_ollama.R`](02_ollama.R) — R example
-2. [ACTIVITY: Set Up Ollama API Key](ACTIVITY_ollama_api_key.md)
+2. [ACTIVITY: Set Up Gemini API Key](ACTIVITY_ollama_api_key.md)
    - [`03_ollama_cloud.py`](03_ollama_cloud.py) — Python example
    - [`03_ollama_cloud.R`](03_ollama_cloud.R) — R example
 3. [ACTIVITY: Set Up OpenAI API Key](ACTIVITY_openai_api_key.md)

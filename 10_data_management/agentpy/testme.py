@@ -10,7 +10,7 @@
 #   ./manifestme.sh   # uses rsconnect write-manifest fastapi --entrypoint app.api:app
 #   ./deployme.sh
 #
-# On Connect, set at least: OLLAMA_API_KEY, OLLAMA_HOST, OLLAMA_MODEL.
+# On Connect, set at least: GEMINI_API_KEY (and optionally LLM_BASE_URL, LLM_MODEL).
 #
 # pip install requests python-dotenv
 

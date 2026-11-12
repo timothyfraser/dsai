@@ -108,7 +108,7 @@ print("# 4. CONNECT AN LLM TO THE MCP SERVER ####################")
 
 OLLAMA_BASE = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/")
 CHAT_URL = f"{OLLAMA_BASE}/api/chat"
-MODEL = "smollm2:1.7b"
+MODEL = "granite4:3b"
 
 
 def ollama_is_running():

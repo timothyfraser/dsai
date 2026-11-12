@@ -115,7 +115,7 @@ mcp_text_block(result) %>% fromJSON() %>% print()
 
 library(ollamar)
 
-MODEL <- "smollm2:1.7b"
+MODEL <- "granite4:3b"
 
 ## 4a. Fetch tool metadata from the server ---------------
 

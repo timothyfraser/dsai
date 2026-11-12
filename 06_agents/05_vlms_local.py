@@ -7,10 +7,10 @@
 #
 # What if our AI systems could see, not just read?
 # This script shows how to send an image to a vision-capable model
-# (like llava) using local Ollama.
+# (like ministral-3:3b) using local Ollama.
 #
 # Read about model details in the Ollama library:
-# https://ollama.com/library/llava
+# https://ollama.com/library/ministral-3
 #
 # NOTE:
 # Running vision queries can take a LONG time on a local machine.
@@ -80,10 +80,10 @@ print(f"Saved resized image: {image_path_small} ({new_size[0]}x{new_size[1]})")
 
 ## 0.3 Configuration #################################
 
-# LLaVA is a multimodal model that can read images AND text.
+# ministral-3:3b is a small Mistral model that reads images and text.
 # Remember, you'll need to pull the model first:
-# ollama pull llava
-model = "llava"
+# ollama pull ministral-3:3b
+model = "ministral-3:3b"
 # Prompt paired with the image
 prompt = "Analyze this image and count the number of people in the image."
 

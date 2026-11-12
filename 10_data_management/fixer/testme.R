@@ -1,9 +1,9 @@
 #' @name testme.R
-#' @title Smoke test Ollama Cloud chat from the fixer folder (no tools)
+#' @title Smoke test one chat request from the fixer folder (no tools)
 #' @author Prof. Tim Fraser
 #' @description
-#' One POST to **`/api/chat`** with a tiny user message — verifies **`OLLAMA_API_KEY`**,
-#' **`OLLAMA_HOST`**, and **`OLLAMA_MODEL`** without tool calling or **`num_predict`**
+#' One POST to **`/chat/completions`** with a tiny user message — verifies **`GEMINI_API_KEY`**,
+#' **`LLM_BASE_URL`**, and **`LLM_MODEL`** without tool calling or **`max_tokens`**
 #' (helps isolate HTTP 400s from the full **`fixer_csv.R`** loop).
 
 # 0. SETUP ###################################
@@ -30,15 +30,17 @@ if (file.exists(env_path)) {
   readRenviron(env_path)
 }
 
-OLLAMA_HOST = trimws(Sys.getenv("OLLAMA_HOST", unset = "https://ollama.com"))
-OLLAMA_API_KEY = trimws(Sys.getenv("OLLAMA_API_KEY", unset = ""))
-OLLAMA_MODEL = trimws(Sys.getenv("OLLAMA_MODEL", unset = ""))
-if (!nzchar(OLLAMA_MODEL)) {
-  OLLAMA_MODEL = "gpt-oss:120b"
+LLM_BASE_URL = trimws(Sys.getenv("LLM_BASE_URL", unset = "https://generativelanguage.googleapis.com/v1beta/openai"))
+GEMINI_API_KEY = trimws(Sys.getenv("GEMINI_API_KEY", unset = ""))
+LLM_MODEL = trimws(Sys.getenv("LLM_MODEL", unset = ""))
+if (!nzchar(LLM_MODEL)) {
+  LLM_MODEL = "gemini-flash-lite-latest"
 }
 
-if (!nzchar(OLLAMA_API_KEY)) {
-  stop("Set OLLAMA_API_KEY in fixer/.env (copy from .env.example).")
+# A local server (http://localhost...) needs no key.
+is_local = startsWith(LLM_BASE_URL, "http://localhost") || startsWith(LLM_BASE_URL, "http://127.0.0.1")
+if (!is_local && !nzchar(GEMINI_API_KEY)) {
+  stop("Set GEMINI_API_KEY in fixer/.env (copy from .env.example).")
 }
 
 source(file.path(FIXER_ROOT, "functions.R"), local = FALSE)
@@ -53,17 +55,17 @@ messages = list(
   )
 )
 
-cat("Test query: POST ", OLLAMA_HOST, "/api/chat\n", sep = "")
-cat("Model: ", OLLAMA_MODEL, "\n\n", sep = "")
+cat("Test query: POST ", LLM_BASE_URL, "/chat/completions\n", sep = "")
+cat("Model: ", LLM_MODEL, "\n\n", sep = "")
 
 out = tryCatch(
-  ollama_chat_once(
-    OLLAMA_HOST,
-    OLLAMA_API_KEY,
-    OLLAMA_MODEL,
+  llm_chat_once(
+    LLM_BASE_URL,
+    GEMINI_API_KEY,
+    LLM_MODEL,
     messages,
     tools = NULL,
-    format = NULL,
+    json = FALSE,
     max_output_tokens = NULL
   ),
   error = function(e) {

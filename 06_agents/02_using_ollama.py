@@ -20,7 +20,7 @@ import time      # for timing operations
 ## 0.2 Configure Connection #########################
 
 # Select model of interest
-MODEL = "smollm2:1.7b"
+MODEL = "granite4:3b"
 
 # Set the port where Ollama is running
 PORT = 11434

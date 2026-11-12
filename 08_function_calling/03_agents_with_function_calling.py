@@ -25,7 +25,7 @@ from functions import agent
 ## 0.3 Configuration #################################
 
 # Select model of interest
-MODEL = "smollm2:1.7b"
+MODEL = "granite4:3b"
 
 # 1. DEFINE FUNCTIONS TO BE USED AS TOOLS ###################################
 

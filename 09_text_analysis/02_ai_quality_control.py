@@ -29,7 +29,7 @@ AI_PROVIDER = "ollama"  # Change to "openai" if using OpenAI
 # Ollama configuration
 PORT = 11434
 OLLAMA_HOST = f"http://localhost:{PORT}"
-OLLAMA_MODEL = "llama3.2:latest"  # Use a model that supports JSON output
+OLLAMA_MODEL = "granite4:3b"  # Use a model that supports JSON output
 
 # OpenAI configuration
 load_dotenv()

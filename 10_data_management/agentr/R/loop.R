@@ -1,5 +1,5 @@
 # R/loop.R
-# Multi-turn disaster situational brief loop against Ollama — parity with agentpy/app/loop.py
+# Multi-turn disaster situational brief loop against an OpenAI-compatible chat endpoint (Gemini free tier by default) — parity with agentpy/app/loop.py
 # Tim Fraser
 
 END_MARKER = "END_BRIEF"
@@ -126,28 +126,30 @@ dispatch_tool_call = function(name, args, search_left, skill_left) {
 inject_forced_read_skill_round = function(messages, search_left, skill_left) {
   flag = tolower(trimws(Sys.getenv("AGENT_FORCE_FIRST_TOOL", unset = "1")))
   if (flag %in% c("0", "false", "no", "off")) {
-    return(FALSE)
+    return(list(messages = messages, forced = FALSE))
   }
   fn = trimws(Sys.getenv("AGENT_FORCE_FIRST_SKILL", unset = "disaster_situational_brief.md"))
   if (!nzchar(fn)) {
     fn = "disaster_situational_brief.md"
   }
   if (skill_left[[1L]] <= 0L) {
-    return(FALSE)
+    return(list(messages = messages, forced = FALSE))
   }
 
   result = dispatch_tool_call("read_skill", list(filename = fn), search_left, skill_left)
   tid = paste0("forced_read_skill_", random_hex_chunk(1), random_hex_chunk(1))
   messages[[length(messages) + 1L]] = list(
     role = "assistant",
-    content = "",
+    content = NULL,
     tool_calls = list(
       list(
         id = tid,
         type = "function",
+        # Gemini needs a signature on calls it did not generate; this placeholder value is the one Google documents for that case.
+        extra_content = list(google = list(thought_signature = "skip_thought_signature_validator")),
         `function` = list(
           name = "read_skill",
-          arguments = list(filename = fn)
+          arguments = as.character(jsonlite::toJSON(list(filename = fn), auto_unbox = TRUE))
         )
       )
     )
@@ -155,17 +157,15 @@ inject_forced_read_skill_round = function(messages, search_left, skill_left) {
   messages[[length(messages) + 1L]] = list(
     role = "tool",
     content = result,
-    name = "read_skill",
-    tool_name = "read_skill",
     tool_call_id = tid
   )
-  TRUE
+  list(messages = messages, forced = TRUE)
 }
 
 run_research_loop = function(
   task,
-  ollama_host,
-  ollama_api_key,
+  llm_base_url,
+  llm_api_key,
   model,
   max_turns = NULL,
   max_output_tokens = NULL,
@@ -191,7 +191,7 @@ run_research_loop = function(
   min_done = min(min_completion_turns(), turns_budget)
   fresh_start = is.null(existing_messages)
   system_text = build_system_prompt()
-  tools = ollama_tool_definitions()
+  tools = llm_tool_definitions()
   search_left = list(as.integer(MAX_WEB_SEARCHES_PER_REQUEST))
   skill_left = list(as.integer(MAX_SKILL_READS_PER_REQUEST))
   prefetch_search_used = FALSE
@@ -216,7 +216,9 @@ run_research_loop = function(
 
   forced_tool_round = FALSE
   if (isTRUE(fresh_start)) {
-    forced_tool_round = inject_forced_read_skill_round(messages, search_left, skill_left)
+    forced_round = inject_forced_read_skill_round(messages, search_left, skill_left)
+    messages = forced_round$messages
+    forced_tool_round = forced_round$forced
   }
 
   if (is.null(max_output_tokens)) {
@@ -246,12 +248,12 @@ run_research_loop = function(
       break
     }
     turns_used = turns_used + 1L
-    agent_log_info(paste("turn", turns_used, "/", turns_budget, "calling Ollama model=", model))
+    agent_log_info(paste("turn", turns_used, "/", turns_budget, "calling LLM model=", model))
 
     out = tryCatch(
-      ollama_chat_once(
-        ollama_host,
-        ollama_api_key,
+      llm_chat_once(
+        llm_base_url,
+        llm_api_key,
         model,
         messages,
         tools,
@@ -263,7 +265,7 @@ run_research_loop = function(
     )
 
     if (!is.null(out$error)) {
-      agent_log_warn(paste("turn", turns_used, "Ollama error:", redact_for_log(conditionMessage(out$error))))
+      agent_log_warn(paste("turn", turns_used, "LLM error:", redact_for_log(conditionMessage(out$error))))
       return(list(
         status = "error",
         reply = last_content,
@@ -276,11 +278,31 @@ run_research_loop = function(
     }
 
     msg = out$message %||% list()
+    tool_calls = msg$tool_calls %||% NULL
+    has_calls = !is.null(tool_calls) && length(tool_calls) > 0L
+    if (!has_calls && !nzchar(out$content %||% "")) {
+      return(list(
+        status = "error",
+        reply = last_content,
+        turns_used = turns_used,
+        prefetch_search_used = prefetch_search_used,
+        forced_tool_round = forced_tool_round,
+        min_completion_turns = min_done,
+        detail = "empty reply from the model"
+      ))
+    }
+    if (has_calls) {
+      for (i in seq_along(tool_calls)) {
+        if (is.list(tool_calls[[i]]) && !nzchar(as.character(tool_calls[[i]]$id %||% ""))) {
+          tool_calls[[i]]$id = paste0("call_", turns_used, "_", i)
+        }
+      }
+      msg$tool_calls = tool_calls
+    }
     assistant_msg = msg
     messages[[length(messages) + 1L]] = assistant_msg
 
-    tool_calls = msg$tool_calls %||% NULL
-    if (!is.null(tool_calls) && length(tool_calls) > 0L) {
+    if (has_calls) {
       agent_log_info(paste("turn", turns_used, "assistant tool_calls count=", length(tool_calls)))
       for (tc in tool_calls) {
         if (!is.list(tc)) {
@@ -301,15 +323,8 @@ run_research_loop = function(
           "turn ", turns_used, " tool ", name, " result_len=", nchar(result),
           " preview=", redact_for_log(preview_log_text(result, 120L))
         ))
-        tool_message = list(role = "tool", content = result)
-        if (nzchar(name)) {
-          tool_message$name = name
-          tool_message$tool_name = name
-        }
-        tid = tc$id
-        if (!is.null(tid) && nzchar(as.character(tid))) {
-          tool_message$tool_call_id = tid
-        }
+        tid = as.character(tc$id %||% "")
+        tool_message = list(role = "tool", tool_call_id = tid, content = as.character(result))
         messages[[length(messages) + 1L]] = tool_message
       }
       next

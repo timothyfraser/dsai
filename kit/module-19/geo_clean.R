@@ -27,10 +27,13 @@ OUT_CSV = "output/addresses_clean.csv"
 CHANGES_PATH = "output/changes.jsonl"
 dir.create("output", showWarnings = FALSE)
 
-# Which model to ask. Ollama runs on your own computer at this address by default.
-OLLAMA_HOST = Sys.getenv("OLLAMA_HOST", "http://localhost:11434")
-OLLAMA_MODEL = Sys.getenv("OLLAMA_MODEL", "smollm2:1.7b")
-OLLAMA_API_KEY = Sys.getenv("OLLAMA_API_KEY", "")
+# Which model to ask. The default is Google's free Gemini tier. The free tier may use your prompts
+# to improve Google's products, so send only public or made-up data.
+# To use your own computer instead: LLM_BASE_URL=http://localhost:11434/v1 and LLM_MODEL=granite4:3b
+# (run `ollama pull granite4:3b` first). The local path needs no key.
+LLM_BASE_URL = Sys.getenv("LLM_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
+LLM_MODEL = Sys.getenv("LLM_MODEL", "gemini-flash-lite-latest")
+GEMINI_API_KEY = Sys.getenv("GEMINI_API_KEY", "")
 LLM_STUB = Sys.getenv("LLM_STUB", "") == "1"
 
 # The model may fill these five text fields and nothing else.
@@ -67,20 +70,28 @@ ask_model = function(row_id, address_raw) {
   # Stub mode: the saved reply for this row, so the checks run without a model.
   if (LLM_STUB) { return(fromJSON(STUB_PATH)[[row_id]]) }
   library(httr2)
+  local = startsWith(LLM_BASE_URL, "http://localhost") || startsWith(LLM_BASE_URL, "http://127.0.0.1")
+  if (!local && !nzchar(GEMINI_API_KEY)) {
+    stop("Set GEMINI_API_KEY, or set LLM_BASE_URL to a local Ollama address.")
+  }
   body = list(
-    model = OLLAMA_MODEL, stream = FALSE, format = "json",
-    options = list(temperature = 0),
+    model = LLM_MODEL, temperature = 0,
     messages = list(
       list(role = "system", content = SYSTEM_PROMPT),
       list(role = "user", content = address_raw)
     )
   )
-  req = request(paste0(OLLAMA_HOST, "/api/chat")) %>%
+  reply = request(paste0(LLM_BASE_URL, "/chat/completions")) %>%
+    req_auth_bearer_token(if (local) "ollama" else GEMINI_API_KEY) %>%
     req_body_json(body) %>%
-    req_timeout(120)
-  if (nzchar(OLLAMA_API_KEY)) { req = req %>% req_auth_bearer_token(OLLAMA_API_KEY) }
-  reply = req %>% req_perform() %>% resp_body_json()
-  fromJSON(reply$message$content)
+    req_timeout(120) %>%
+    req_retry(max_tries = 3, backoff = function(i) 2^i,
+              is_transient = function(r) resp_status(r) %in% c(429, 500, 503)) %>%
+    req_perform() %>%
+    resp_body_json()
+  text = trimws(reply$choices[[1]]$message$content)
+  text = trimws(sub("```$", "", sub("^```(json)?", "", text)))
+  fromJSON(text)
 }
 
 # 3. GUARD THE REPLY ###################################

@@ -2,7 +2,7 @@ python fixer_csv.py
 >> C:\Users\tmf77\courses\SYSEN5381\dsai\10_data_management\fixer>
 
 =================================================================
-📋 fixer_csv.py — batched tool calls + ThreadPoolExecutor (Ollama Cloud)
+📋 fixer_csv.py — batched tool calls + ThreadPoolExecutor (OpenAI-compatible chat API)
 =================================================================
 
 📦 Loading Python packages (pandas, httpx, dotenv) ...
@@ -17,9 +17,8 @@ python fixer_csv.py
 🔐 Loading .env ...
    ✅ .env read from fixer folder.
 
-☁️  Ollama: host = https://ollama.com
-   model  = nemotron-3-nano:30b-cloud
-   API key (masked): d002...x
+☁️  LLM: base URL = https://generativelanguage.googleapis.com/v1beta/openai
+   model  = gemini-flash-lite-latest
 
 📊 ROWS_PER_BATCH = 10 (env ROWS_PER_BATCH)
 📊 FIXER_CHUNK_WORKERS = 1 (env FIXER_CHUNK_WORKERS)
@@ -53,7 +52,7 @@ python fixer_csv.py
 ✂️  Split into 3 chunk(s) of up to 10 rows.
 
 -----------------------------------------------------------------
-🔄 Step 2 — Ollama /api/chat per chunk (workers = 1)
+🔄 Step 2 — LLM /chat/completions per chunk (workers = 1)
 -----------------------------------------------------------------
 
 
@@ -121,7 +120,7 @@ python fixer_csv.py
 PS C:\Users\tmf77\courses\SYSEN5381\dsai\10_data_management\fixer> python fixer_pois.py
 
 =================================================================
-📍 fixer_pois.py — batched POI category tools + points (Ollama Cloud)
+📍 fixer_pois.py — batched POI category tools + points (OpenAI-compatible chat API)
 =================================================================
 
 📦 Loading Python packages (pandas, geopandas, matplotlib, httpx, dotenv) ...
@@ -135,8 +134,8 @@ PS C:\Users\tmf77\courses\SYSEN5381\dsai\10_data_management\fixer> python fixer_
 🔐 Loading .env ...
    ✅ .env read from fixer folder.
 
-☁️  Ollama: host = https://ollama.com
-   model  = nemotron-3-nano:30b-cloud
+☁️  LLM: base URL = https://generativelanguage.googleapis.com/v1beta/openai
+   model  = gemini-flash-lite-latest
 
 📊 ROWS_PER_BATCH = 10
 📊 FIXER_CHUNK_WORKERS = 1
@@ -153,7 +152,7 @@ PS C:\Users\tmf77\courses\SYSEN5381\dsai\10_data_management\fixer> python fixer_
 ✂️  Split into 3 chunk(s) of up to 10 rows.
 
 -----------------------------------------------------------------
-🔄 Step 2 — Ollama /api/chat per chunk (ThreadPoolExecutor)
+🔄 Step 2 — LLM /chat/completions per chunk (ThreadPoolExecutor)
 -----------------------------------------------------------------
 
 
@@ -219,8 +218,8 @@ PS C:\Users\tmf77\courses\SYSEN5381\dsai\10_data_management\fixer> python fixer_
 🔐 Loading .env ...
    ✅ .env read from fixer folder.
 
-☁️  Ollama: host = https://ollama.com
-   model  = nemotron-3-nano:30b-cloud
+☁️  LLM: base URL = https://generativelanguage.googleapis.com/v1beta/openai
+   model  = gemini-flash-lite-latest
 
 📊 ROWS_PER_BATCH = 10 (env ROWS_PER_BATCH)
 📊 FIXER_CHUNK_WORKERS = 1 (env FIXER_CHUNK_WORKERS)
@@ -238,7 +237,7 @@ PS C:\Users\tmf77\courses\SYSEN5381\dsai\10_data_management\fixer> python fixer_
 ✂️  Split into 1 chunk(s) of up to 10 rows.
 
 -----------------------------------------------------------------
-🔄 Step 2 — Ollama /api/chat per chunk (ThreadPoolExecutor)
+🔄 Step 2 — LLM /chat/completions per chunk (ThreadPoolExecutor)
 -----------------------------------------------------------------
 
 

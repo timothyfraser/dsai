@@ -13,10 +13,10 @@ library(purrr)
 library(lubridate)
 library(yaml)
 
-source("functions.R")
+source("06_agents/functions.R")
 
 # Select model of interest
-MODEL = "smollm2:135m"
+MODEL = "granite4:3b"
 
 # =============================================================================
 # Load Rules from YAML
@@ -28,7 +28,7 @@ MODEL = "smollm2:135m"
 # Learn more about standard AI rules formatting here: https://aicodingrules.org/
 
 # Load in rules
-rules = yaml::read_yaml("04_rules.yaml")
+rules = yaml::read_yaml("06_agents/04_rules.yaml")
 
 # Extract rules as named lists for easy access
 rules_data_analysis = rules$rules$data_analysis

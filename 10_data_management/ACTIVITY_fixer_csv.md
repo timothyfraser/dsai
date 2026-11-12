@@ -1,6 +1,6 @@
 # 📌 ACTIVITY
 
-## Run the CSV Fixer (R or Python + Ollama Cloud)
+## Run the CSV Fixer (R or Python + a hosted or local model)
 
 🕒 *Estimated Time: 10–15 minutes*
 
@@ -8,7 +8,9 @@
 
 ## 📋 Overview
 
-You will run **[`fixer/fixer_csv.R`](fixer/fixer_csv.R)** *or* **[`fixer/fixer_csv.py`](fixer/fixer_csv.py)**, which gives an LLM **tools** to **`set_cell`** on a messy inventory table in **batches**: the script splits the table into chunks of **ROWS_PER_BATCH** rows (default **10**), sends **one** `/api/chat` per chunk with a shared **data-quality blurb** in the script, and the model returns many **`set_cell`** calls per chunk. Patches run on the main R process (**furrr** optional parallelism) or the main Python thread (**ThreadPoolExecutor** for chunk HTTP only; **`FIXER_CHUNK_WORKERS`**). Each successful edit is logged in **`fixer/output/fix_audit.jsonl`**. The raw teaching file in **`fixer/data/messy_inventory_raw.csv`** stays unchanged on disk (a working copy is written under **`fixer/output/messy_inventory_working.csv`**).
+You will run **[`fixer/fixer_csv.R`](fixer/fixer_csv.R)** *or* **[`fixer/fixer_csv.py`](fixer/fixer_csv.py)**, which gives an LLM **tools** to **`set_cell`** on a messy inventory table in **batches**: the script splits the table into chunks of **ROWS_PER_BATCH** rows (default **10**), sends **one** model call per chunk with a shared **data-quality blurb** in the script, and the model returns many **`set_cell`** calls per chunk. Patches run on the main R process (**furrr** optional parallelism) or the main Python thread (**ThreadPoolExecutor** for chunk HTTP only; **`FIXER_CHUNK_WORKERS`**). Each successful edit is logged in **`fixer/output/fix_audit.jsonl`**. The raw teaching file in **`fixer/data/messy_inventory_raw.csv`** stays unchanged on disk (a working copy is written under **`fixer/output/messy_inventory_working.csv`**).
+
+**Model setup.** Get a free key at [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) and set **`GEMINI_API_KEY`** in **`fixer/.env`**; keep **`LLM_BASE_URL`** and **`LLM_MODEL`** at the values in **`fixer/.env.example`**. The free tier may use your prompts to improve Google's products, so send only public or made-up data. *Run it on your own computer instead:* run `ollama pull granite4:3b`, then set **`LLM_BASE_URL=http://localhost:11434/v1`** and **`LLM_MODEL=granite4:3b`** (no key needed).
 
 More detail: **[`fixer/README.md`](fixer/README.md)**.
 
@@ -20,7 +22,7 @@ More detail: **[`fixer/README.md`](fixer/README.md)**.
 
 - [ ] **R track:** Install **`dplyr`**, **`readr`**, **`httr2`**, **`jsonlite`**, **`future`**, **`furrr`** (see **[`fixer/README.md`](fixer/README.md)** for the full list used across fixer scripts).
 - [ ] **Python track:** Install dependencies with **`pip install -r 10_data_management/fixer/requirements.txt`** (from repo root or the **`fixer/`** folder).
-- [ ] Copy **[`fixer/.env.example`](fixer/.env.example)** to **`fixer/.env`** and set **`OLLAMA_API_KEY`** from [ollama.com](https://ollama.com). Keep **`OLLAMA_HOST`** and **`OLLAMA_MODEL`** aligned with the course default unless your instructor says otherwise. Use a model that supports **tool calling** on your host (see **`fixer/.env.example`**).
+- [ ] Copy **[`fixer/.env.example`](fixer/.env.example)** to **`fixer/.env`** and set **`GEMINI_API_KEY`**, **`LLM_BASE_URL`** and **`LLM_MODEL`** (see the model setup note above). Use a model that supports **tool calling**.
 - [ ] From the **`dsai`** repository root, confirm **`fixer/data/messy_inventory_raw.csv`** exists (30 rows).
 
 ### 🧱 Stage 2: Run and verify
@@ -42,7 +44,7 @@ More detail: **[`fixer/README.md`](fixer/README.md)**.
 
 ## 💡 Building similar scripts (Cursor)
 
-If you use **Cursor** with this repository, these **Agent Skills** under [`.cursor/skills/`](../.cursor/skills/) can help when you write your own batched Ollama + R workflows:
+If you use **Cursor** with this repository, these **Agent Skills** under [`.cursor/skills/`](../.cursor/skills/) can help when you write your own batched LLM + R workflows:
 
 - **[`data-science-agent-loop`](../.cursor/skills/data-science-agent-loop/SKILL.md)** — short-lived agent loops: `.env`, batch size, tool schemas, main-process patches, and how this pattern differs from **`agentr`** / **`agentpy`**.
 - **[`console-message`](../.cursor/skills/console-message/SKILL.md)** — clear console progress (section dividers, paths, row counts, previews) for debuggable runs.

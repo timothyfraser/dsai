@@ -14,13 +14,14 @@
 import os
 import subprocess
 import time
+import urllib.request
 
 # 0. Setup #################################
 
 ## 0.1 Configuration ############################
 
 PORT = 11434  # Match 01_ollama.sh
-OLLAMA_HOST = f"0.0.0.0:{PORT}"
+OLLAMA_HOST = f"127.0.0.1:{PORT}"
 OLLAMA_CONTEXT_LENGTH = 32000
 
 # Set environment variables for this process and any child processes
@@ -29,13 +30,19 @@ os.environ["OLLAMA_CONTEXT_LENGTH"] = str(OLLAMA_CONTEXT_LENGTH)
 
 ## 0.2 Start Ollama Server #######################
 
-# Start `ollama serve` in the background.
-# stdout/stderr are redirected to DEVNULL so the console is not flooded.
-process = subprocess.Popen(
-    ["ollama", "serve"],
-    stdout=subprocess.DEVNULL,
-    stderr=subprocess.DEVNULL,
-)
+# Only start a server if none answers (Ollama may already be running)
+try:
+    urllib.request.urlopen(f"http://127.0.0.1:{PORT}/api/version", timeout=2)
+    print("Ollama is already running; using it.")
+    process = None
+except OSError:
+    # Start `ollama serve` in the background.
+    # stdout/stderr are redirected to DEVNULL so the console is not flooded.
+    process = subprocess.Popen(
+        ["ollama", "serve"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
 
 # Give the server a moment to start listening before use
 time.sleep(1)

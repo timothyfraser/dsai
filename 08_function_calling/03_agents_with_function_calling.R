@@ -8,7 +8,7 @@ require(dplyr) # for data wrangling
 require(stringr) # for string operations
 
 # Select model of interest
-MODEL = "smollm2:1.7b"
+MODEL = "granite4:3b"
 
 # Let's write a wrapper function that will run a single agent.
 
@@ -26,7 +26,7 @@ MODEL = "smollm2:1.7b"
 #' @importFrom ollamar chat
 #' @return A list of responses from the agent.
 #' @export 
-agent = function(messages, model = "smollm2:1.7b", output = "text", tools = NULL, all = FALSE){
+agent = function(messages, model = "granite4:3b", output = "text", tools = NULL, all = FALSE){
 
     # # Testing values
     # messages = create_message(role = "user", content = "Add 3 + 5.")
@@ -52,7 +52,7 @@ agent = function(messages, model = "smollm2:1.7b", output = "text", tools = NULL
     #     )
     # )
     # tools = list(tool_add_two_numbers); 
-    # model = "smollm2:1.7b"; 
+    # model = "granite4:3b"; 
     # output = "tools";
 
     # If the agent has NO tools, perform a standard chat
@@ -121,7 +121,7 @@ tool_get_table = list(
 )
 
 # tools = list(tool_add_two_numbers); 
-model = "smollm2:1.7b"; 
+model = "granite4:3b"; 
 
 # Trying to call a standard chat
 resp = create_message(role = "user", content = "Write a haiku about cheese.") |>
@@ -130,7 +130,7 @@ resp
 
 # Try calling tool #1
 resp = create_message(role = "user", content = "Add 3 + 5.") |>
-    agent(model = model, output = "tools", tools = list(tool_add_two_numbers))
+    agent(model = model, output = "tools", tools = list(tool_add_two_numbers), all = TRUE)
 resp
 
 resp[[1]]$output

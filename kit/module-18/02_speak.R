@@ -61,8 +61,8 @@ time = system.time({
 cat("\nTime taken: ", round(time[3], 2), " seconds\n")
 cat("Wrote: ", path, " (", file.info(path)$size, " bytes)\n")
 
-# Play (in windows, this triggers windows media player)
-path |> readWave() |> play()
+# Play (in windows, this triggers windows media player); skipped when run with Rscript
+if (interactive()) path |> readWave() |> play()
 
 # Listen for: numbers ("three" vs "3"), short codes (try "P-3"), and names.
 # TTS reads what you write, so write numbers and codes the way you want them said.

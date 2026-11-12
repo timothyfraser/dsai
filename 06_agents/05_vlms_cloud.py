@@ -1,5 +1,5 @@
 # 05_vlms_cloud.py
-# Using Visual Language Models (VLMs) with Ollama Cloud
+# Using Visual Language Models (VLMs) with Google's free Gemini tier
 # Pairs with 05_vlms_cloud.R
 # Tim Fraser
 #
@@ -7,10 +7,12 @@
 #
 # What if our AI systems could see, not just read?
 # This script shows how to send an image to a vision-capable model
-# (like gemma3:4b) using Ollama cloud.
+# (like gemini-flash-lite-latest) using Google's free Gemini tier.
+# The free tier may use your prompts to improve Google's products,
+# so send only public or made-up data.
 #
-# Read about model details in the Ollama library:
-# https://ollama.com/library/gemma3
+# Get a free key at https://aistudio.google.com/app/apikey
+# and save it in your .env file as GEMINI_API_KEY=...
 
 # If you haven't already, install these packages...
 # pip install requests pillow python-dotenv
@@ -45,9 +47,11 @@
 
 import base64  # for image encoding before API upload
 import json  # for parsing machine-readable model output
+import mimetypes  # for finding the image's mime type
 import os  # for environment variables and file checks
 
 import requests  # for HTTP requests
+import time  # for waiting between retries
 from dotenv import load_dotenv  # for loading .env files
 from PIL import Image  # for image resizing
 
@@ -75,20 +79,20 @@ print(f"Saved resized image: {image_path_small} ({new_size[0]}x{new_size[1]})")
 
 ## 0.3 Environment #################################
 
-# Load .env (contains OLLAMA_API_KEY for cloud access)
+# Load .env (contains GEMINI_API_KEY for cloud access)
 if os.path.exists(".env"):
     load_dotenv()
 else:
     print(".env file not found. Make sure it exists in the project root.")
 
-ollama_api_key = os.getenv("OLLAMA_API_KEY")
-if not ollama_api_key:
-    raise ValueError("OLLAMA_API_KEY not found in .env file.")
+gemini_api_key = os.getenv("GEMINI_API_KEY")
+if not gemini_api_key:
+    raise ValueError("GEMINI_API_KEY not found in .env file.")
 
 ## 0.4 Configuration #################################
 
-# gemma3:4b is a multimodal model that can read images + text
-model = "gemma3:4b"
+# gemini-flash-lite-latest is a multimodal model that can read images + text
+model = "gemini-flash-lite-latest"
 # Prompt we pair with the image
 prompt = "Analyze this image and count the number of people in the image."
 
@@ -98,21 +102,26 @@ if not os.path.exists(image_path_small):
 
 # Let's write ourselves a short helper function for the query
 def query(image_file_path, user_prompt, model_name, api_key):
-    """Send one image + prompt to Ollama Cloud and return text output."""
+    """Send one image + prompt to the Gemini API and return text output."""
     with open(image_file_path, "rb") as image_file:
         image_base64 = base64.b64encode(image_file.read()).decode("utf-8")
 
-    # Build the request body (Ollama chat format)
+    # Find the image's real mime type (eg. image/jpeg)
+    mime_type = mimetypes.guess_type(image_file_path)[0] or "image/jpeg"
+
+    # Build the request body (OpenAI-compatible chat format)
+    # The image goes in as a data URI inside the message content
     body = {
         "model": model_name,
         "messages": [
             {
                 "role": "user",
-                "content": user_prompt,
-                "images": [image_base64],
+                "content": [
+                    {"type": "text", "text": user_prompt},
+                    {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{image_base64}"}},
+                ],
             }
         ],
-        "stream": False,
     }
 
     # Send bearer-token auth in request headers
@@ -121,16 +130,26 @@ def query(image_file_path, user_prompt, model_name, api_key):
         "Content-Type": "application/json",
     }
 
-    # POST to Ollama Cloud
-    response = requests.post("https://ollama.com/api/chat", headers=headers, json=body, timeout=120)
-    response.raise_for_status()
+    # POST to Gemini; if the service is busy (429, 500, 503), retry up to 3 times
+    url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+    for wait in [2, 4, None]:
+        response = requests.post(url, headers=headers, json=body, timeout=120)
+        if response.status_code not in (429, 500, 503):
+            break
+        if wait is None:
+            break
+        time.sleep(wait)
+    if response.status_code in (429, 500, 503):
+        raise RuntimeError(f"Gemini is busy or over its free limit (HTTP {response.status_code}). Try again later.")
+    if response.status_code != 200:
+        raise SystemExit(f"Gemini request failed with HTTP status {response.status_code}.")
     result = response.json()
-    return result["message"]["content"]
+    return result["choices"][0]["message"]["content"]
 
 
 # 1. CLOUD VLM WITH REQUESTS ##########################
 
-output = query(image_path_small, prompt, model, ollama_api_key)
+output = query(image_path_small, prompt, model, gemini_api_key)
 print("\nVLM Response (cloud):")
 print(output)
 
@@ -147,7 +166,7 @@ prompt2 = (
     '{"n_sitting":"<total number of people sitting here>","n_standing":"<total number of people standing here>"}'
 )
 
-resp2 = query(image_path_small, prompt2, model, ollama_api_key)
+resp2 = query(image_path_small, prompt2, model, gemini_api_key)
 print("\nRaw JSON-like response:")
 print(resp2)
 

@@ -16,8 +16,8 @@
 # LLM_STUB=1 skips Ollama and uses a fixed JSON answer.
 
 # If you haven't already, install these packages...
-# pip install faster-whisper requests
-# and pull the model in Ollama: ollama pull smollm2:1.7b
+# pip install faster-whisper "av<19" requests  # av 19 breaks faster-whisper 1.2.1
+# and pull the model in Ollama: ollama pull granite4:3b
 
 # 0. SETUP ###################################
 
@@ -36,7 +36,7 @@ import requests  # for HTTP requests to Ollama
 AUDIO_PATH = os.getenv("AUDIO_PATH", "06_agents/06_jfk_short.wav")
 WORK_ORDERS_CSV = os.getenv("WORK_ORDERS_CSV", "work_orders.csv")
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/chat")
-MODEL = os.getenv("MODEL", "smollm2:1.7b")
+MODEL = os.getenv("MODEL", "granite4:3b")
 AUDIO_STUB = os.getenv("AUDIO_STUB", "") == "1"
 LLM_STUB = os.getenv("LLM_STUB", "") == "1"
 

@@ -27,6 +27,7 @@ Build a simple multi-agent workflow where agents work together in sequence. Unde
 ### 🧱 Stage 3: Explore Extended Multi-Agent Examples
 
 - [ ] Review the vision-language model examples: [`05_vlms_local.R`](05_vlms_local.R), [`05_vlms_local.py`](05_vlms_local.py), [`05_vlms_cloud.R`](05_vlms_cloud.R), and [`05_vlms_cloud.py`](05_vlms_cloud.py)
+- [ ] For the cloud vision examples, get a free Gemini key at https://aistudio.google.com/app/apikey and save it in your `.env` file as `GEMINI_API_KEY`. The free tier may use your prompts to improve Google's products, so send only public or made-up data.
 - [ ] Review the audio-language model examples: [`06_alms_cloud.R`](06_alms_cloud.R) and [`06_alms_cloud.py`](06_alms_cloud.py)
 - [ ] Review parallel query examples and dataset: [`07_parallel_queries.R`](07_parallel_queries.R), [`07_parallel_queries.py`](07_parallel_queries.py), and [`07_feedback.csv`](07_feedback.csv)
 

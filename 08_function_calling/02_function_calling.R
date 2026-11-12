@@ -10,7 +10,7 @@ require(dplyr)
 require(stringr)
 
 # Select model of interest
-MODEL = "smollm2:1.7b"
+MODEL = "granite4:3b"
 
 # Define a function to be used as a tool
 add_two_numbers = function(x, y){

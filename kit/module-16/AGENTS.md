@@ -1,6 +1,6 @@
 # AGENTS.md (task contract)
 
-You are a small local model working on ONE task. Follow this file exactly.
+You are a small model working on ONE task. Follow this file exactly.
 Keep this file short; every line here is re-read on every turn.
 
 ## TASK

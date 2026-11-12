@@ -10,7 +10,8 @@ library(jsonlite) # for JSON operations
 library(ollamar) # for interacting with the LLM
 source("07_rag/functions.R")
 
-MODEL = "smollm2:1.7b" # use this small model
+# First time only, in a terminal: ollama pull granite4:3b
+MODEL = "granite4:3b" # use this small model
 PORT = 11434 # use this default port
 OLLAMA_HOST = paste0("http://localhost:", PORT) # use this default host
 DOCUMENT = "07_rag/data/pokemon.csv" # path to the document to search

@@ -1,5 +1,5 @@
 # fixer_spatial_context.py
-# Contextual spatial routing — LLM picks geopandas-backed tools per parcel (batched Ollama)
+# Contextual spatial routing — LLM picks geopandas-backed tools per parcel (batched model calls)
 # Tim Fraser
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from dotenv import load_dotenv
 
-from functions import ollama_chat_once, parse_function_arguments, split_df_into_row_chunks
+from functions import llm_chat_once, llm_settings, parse_function_arguments, split_df_into_row_chunks
 
 print()
 print("=================================================================")
@@ -44,16 +44,15 @@ print(f"   💾 Output:  {OUT_CSV}\n")
 
 env_path = FIXER_ROOT / ".env"
 print("🔐 Loading .env ...")
-if not env_path.is_file():
-    raise SystemExit("No .env in fixer folder; create one with OLLAMA_API_KEY, OLLAMA_HOST, OLLAMA_MODEL.")
-load_dotenv(env_path)
-print("   ✅ .env read from fixer folder.\n")
+if env_path.is_file():
+    load_dotenv(env_path)
+    print("   ✅ .env read from fixer folder.\n")
+else:
+    print("   (no .env in fixer folder; using environment variables)\n")
 
-OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "https://ollama.com").strip()
-OLLAMA_API_KEY = os.environ.get("OLLAMA_API_KEY", "").strip()
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "nemotron-3-nano:30b-cloud").strip()
-print(f"☁️  Ollama: host = {OLLAMA_HOST}")
-print(f"   model  = {OLLAMA_MODEL}\n")
+LLM_BASE_URL, LLM_MODEL, LLM_API_KEY = llm_settings()
+print(f"☁️  Model API: base URL = {LLM_BASE_URL}")
+print(f"   model  = {LLM_MODEL}\n")
 
 
 def read_env_digits(name: str, default: int) -> int:
@@ -472,13 +471,13 @@ def dispatch_context_tool(name: str, args: dict[str, Any], api_round: int) -> st
     return f"Unknown tool: {name}"
 
 
-def call_context_chunk_ollama(
+def call_context_chunk_llm(
     chunk_index: int,
     n_chunks: int,
     chunk_csv_text: str,
-    ollama_host: str,
-    ollama_key: str,
-    ollama_model: str,
+    llm_base_url: str,
+    llm_key: str,
+    llm_model: str,
     system_prompt: str,
     data_blurb: str,
     tools: list[dict[str, Any]],
@@ -495,10 +494,10 @@ def call_context_chunk_ollama(
         {"role": "user", "content": user_msg},
     ]
     try:
-        out = ollama_chat_once(
-            ollama_host,
-            ollama_key,
-            ollama_model,
+        out = llm_chat_once(
+            llm_base_url,
+            llm_key,
+            llm_model,
             messages,
             tools=tools,
             format=None,
@@ -532,18 +531,18 @@ ctx_tools = context_tool_definitions()
 # 4. PARALLEL CHUNK API CALLS ###################################
 
 print("-----------------------------------------------------------------")
-print("🔄 Step 2 — Ollama /api/chat per chunk (ThreadPoolExecutor)")
+print("🔄 Step 2 — chat/completions call per chunk (ThreadPoolExecutor)")
 print("-----------------------------------------------------------------\n\n")
 
 
 def _run_ctx(i: int) -> dict[str, Any]:
-    return call_context_chunk_ollama(
+    return call_context_chunk_llm(
         chunk_index=i,
         n_chunks=n_chunks,
         chunk_csv_text=chunk_csv_texts[i - 1],
-        ollama_host=OLLAMA_HOST,
-        ollama_key=OLLAMA_API_KEY,
-        ollama_model=OLLAMA_MODEL,
+        llm_base_url=LLM_BASE_URL,
+        llm_key=LLM_API_KEY,
+        llm_model=LLM_MODEL,
         system_prompt=SYSTEM_CONTEXT,
         data_blurb=ROUTING_BLURB,
         tools=ctx_tools,

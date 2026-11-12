@@ -5,16 +5,16 @@ Copy patterns into a **task folder** (not into this skill). Adjust names to matc
 ## `.env.example` (commit this; no secrets)
 
 ```bash
-# Ollama Cloud
-OLLAMA_API_KEY=
-OLLAMA_HOST=https://ollama.com
-OLLAMA_MODEL=nemotron-3-nano:30b-cloud
+# Free Gemini tier (cloud). Local path: LLM_BASE_URL=http://localhost:11434/v1 and LLM_MODEL=granite4:3b
+GEMINI_API_KEY=
+LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+LLM_MODEL=gemini-flash-lite-latest
 
 # Batching (example names—align with your script’s Sys.getenv()/os.getenv())
 # ROWS_PER_BATCH=10
 # CHUNK_WORKERS=1
 
-# Optional: only if your provider accepts num_predict (omit if HTTP 400)
+# Optional: sent as max_tokens (omit if HTTP 400)
 # MAX_OUTPUT_TOKENS=2048
 
 # fixer_spatial_context.R only — override enriched CSV paths if needed
@@ -22,7 +22,7 @@ OLLAMA_MODEL=nemotron-3-nano:30b-cloud
 # FIXER_CONTEXT_POIS=output/pois_enriched.csv
 ```
 
-## R — one tool definition (Ollama / OpenAI-style)
+## R — one tool definition (OpenAI-compatible)
 
 `parameters$properties` must be a **JSON object**. For **no** properties, use empty named list:
 
@@ -49,7 +49,7 @@ tool_one = function() {
 }
 ```
 
-Single round with tools: build `messages`, then call your `ollama_chat_once(..., tools = tool_one())` (see [`10_data_management/fixer/functions.R`](../../../10_data_management/fixer/functions.R)).
+Single round with tools: build `messages`, then call your `llm_chat_once(..., tools = tool_one())` (see [`10_data_management/fixer/functions.R`](../../../10_data_management/fixer/functions.R)).
 
 ## Python — one tool definition
 

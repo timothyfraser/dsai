@@ -26,7 +26,7 @@ from functions import agent_run, df_as_text
 ## 0.3 Configuration #################################
 
 # Select model of interest
-MODEL = "smollm2:1.7b"
+MODEL = "granite4:3b"
 
 # We will use the FDA Drug Shortages API to get data on drug shortages.
 # https://open.fda.gov/apis/drug/drugshortages/
